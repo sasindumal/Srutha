@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, TouchableOpacity } from 'react-native';
 import { IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ChannelsScreen } from '../screens/ChannelsScreen';
 import { AddChannelScreen } from '../screens/AddChannelScreen';
@@ -33,6 +34,10 @@ const HeaderActions = ({ navigation }: any) => (
 
 // Bottom Tab Navigator - YouTube style: Home, Shorts, +, Subscriptions, Library
 const MainTabs = () => {
+  const insets = useSafeAreaInsets();
+  const baseTabHeight = 60;
+  const tabBarHeight = baseTabHeight + (insets.bottom || 0);
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -40,8 +45,8 @@ const MainTabs = () => {
           backgroundColor: '#0F0F0F',
           borderTopColor: '#272727',
           borderTopWidth: 1,
-          height: 60,
-          paddingBottom: 8,
+          height: tabBarHeight,
+          paddingBottom: Math.max(insets.bottom, 8),
           paddingTop: 8,
         },
         tabBarActiveTintColor: '#FFFFFF',

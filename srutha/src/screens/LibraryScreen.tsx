@@ -2,9 +2,11 @@ import React from 'react';
 import { View, ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTabSwipe } from '../hooks/useTabSwipe';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 export const LibraryScreen = ({ navigation }: any) => {
   const panHandlers = useTabSwipe(navigation);
+  const tabBarHeight = useBottomTabBarHeight();
   const menuItems = [
     {
       icon: 'history',
@@ -27,7 +29,11 @@ export const LibraryScreen = ({ navigation }: any) => {
   ];
 
   return (
-    <ScrollView style={styles.container} {...panHandlers}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: tabBarHeight + 16 }}
+      {...panHandlers}
+    >
       <View style={styles.section}>
         {menuItems.map((item, index) => (
           <TouchableOpacity

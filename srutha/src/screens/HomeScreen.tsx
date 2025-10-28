@@ -14,6 +14,7 @@ import { useChannel } from '../context/ChannelContext';
 import { VideoCard } from '../components/VideoCard';
 import { Video } from '../models/Video';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useTabSwipe } from '../hooks/useTabSwipe';
 
 type SortOrder = 'latest' | 'oldest' | 'views';
@@ -38,6 +39,7 @@ export const HomeScreen = ({ navigation }: any) => {
 
   // Enable edge-swipe to switch bottom tabs, disabled when filter modal is open
   const panHandlers = useTabSwipe(navigation, !showFilterModal);
+  const tabBarHeight = useBottomTabBarHeight();
 
   useEffect(() => {
     loadVideos();
@@ -332,7 +334,10 @@ export const HomeScreen = ({ navigation }: any) => {
         ListFooterComponent={renderFooter}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
-        contentContainerStyle={displayedVideos.length === 0 ? styles.emptyList : undefined}
+        contentContainerStyle={[
+          displayedVideos.length === 0 ? styles.emptyList : null,
+          { paddingBottom: tabBarHeight + 16 },
+        ]}
       />
 
       {/* Filter Modal */}
