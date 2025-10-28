@@ -1,29 +1,39 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View, StyleSheet, Dimensions, Text, TouchableOpacity, FlatList, Image } from 'react-native';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { View, StyleSheet, Dimensions, Text, TouchableOpacity, FlatList, Image, StatusBar } from 'react-native';
 import { useChannel } from '../context/ChannelContext';
 import { Video, formatViews } from '../models/Video';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import YoutubePlayer from 'react-native-youtube-iframe';
 
-const { width, height } = Dimensions.get('window');
+const { width, height: screenHeight } = Dimensions.get('window');
+const PLAYER_HEIGHT = screenHeight;
 
 export const ShortsScreen = ({ navigation }: any) => {
   const { videos, markVideoAsWatched } = useChannel();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [playing, setPlaying] = useState(true);
+  const [playingStates, setPlayingStates] = useState<{ [key: number]: boolean }>({});
   const flatListRef = useRef<FlatList>(null);
 
   // Filter for shorts (videos under 60 seconds)
   const shorts = videos.filter(v => v.durationSeconds && v.durationSeconds <= 60);
 
   useEffect(() => {
+    // Auto-play first video immediately
     if (shorts.length > 0) {
-      setPlaying(true);
+      // Small delay to ensure player is mounted
+      setTimeout(() => {
+        setPlayingStates({ 0: true });
+      }, 300);
     }
-  }, [currentIndex]);
+    // Set status bar to light for dark background
+    StatusBar.setBarStyle('light-content');
+    return () => {
+      StatusBar.setBarStyle('dark-content');
+    };
+  }, [shorts.length]);
 
-  const handleStateChange = (state: string) => {
-    if (state === 'ended') {
+  const onStateChange = useCallback((state: string, index: number) => {
+    if (state === 'ended' && index === currentIndex) {
       // Auto-advance to next short
       if (currentIndex < shorts.length - 1) {
         const nextIndex = currentIndex + 1;
@@ -31,48 +41,44 @@ export const ShortsScreen = ({ navigation }: any) => {
         flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
       }
     }
-  };
+  }, [currentIndex, shorts.length]);
 
-  const togglePlayPause = () => {
-    setPlaying(prev => !prev);
-  };
-
-  const handleLike = () => {
-    // Placeholder for like functionality
-  };
-
-  const handleDislike = () => {
-    // Placeholder for dislike functionality
-  };
-
-  const handleComment = () => {
-    // Placeholder for comment functionality
-  };
-
-  const handleShare = () => {
-    // Placeholder for share functionality
+  const togglePlayPause = (index: number) => {
+    setPlayingStates(prev => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
   };
 
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) {
       const newIndex = viewableItems[0].index;
       if (newIndex !== currentIndex) {
-        setCurrentIndex(newIndex);
-        // Mark as watched when viewed
-        const video = shorts[newIndex];
-        if (video && !video.watched) {
-          markVideoAsWatched(video.id);
-        }
+        // Pause all videos
+        setPlayingStates({});
+        // Play only the current video
+        setTimeout(() => {
+          setPlayingStates({ [newIndex]: true });
+          setCurrentIndex(newIndex);
+          
+          // Mark as watched
+          const video = shorts[newIndex];
+          if (video && !video.watched) {
+            markVideoAsWatched(video.id);
+          }
+        }, 100);
       }
     }
   }).current;
 
   const viewabilityConfig = useRef({
-    itemVisiblePercentThreshold: 80,
+    itemVisiblePercentThreshold: 75,
+    minimumViewTime: 100,
   }).current;
 
   const renderShort = ({ item, index }: { item: Video; index: number }) => {
     const isActive = index === currentIndex;
+    const isPlaying = playingStates[index] || false;
 
     return (
       <View style={styles.shortContainer}>
@@ -80,16 +86,40 @@ export const ShortsScreen = ({ navigation }: any) => {
         <View style={styles.playerContainer}>
           {isActive ? (
             <YoutubePlayer
-              height={height}
+              height={PLAYER_HEIGHT}
               width={width}
-              play={playing}
+              play={isPlaying}
               videoId={item.id}
-              onChangeState={handleStateChange}
+              onChangeState={(state: string) => onStateChange(state, index)}
               webViewStyle={styles.webView}
+              mute={false}
+              volume={100}
+              webViewProps={{
+                androidLayerType: "hardware",
+                allowsInlineMediaPlayback: true,
+                mediaPlaybackRequiresUserAction: false,
+                javaScriptEnabled: true,
+                domStorageEnabled: true,
+                injectedJavaScript: `
+                  var element = document.getElementsByClassName('container')[0];
+                  if (element) {
+                    element.style.position = 'unset';
+                    element.style.paddingBottom = 'unset';
+                  }
+                  true;
+                `,
+              }}
               initialPlayerParams={{
                 controls: false,
-                modestbranding: true,
-                rel: false,
+                modestbranding: 1,
+                rel: 0,
+                loop: 0,
+                showinfo: 0,
+                iv_load_policy: 3,
+                cc_load_policy: 0,
+                fs: 0,
+                playsinline: 1,
+                enablejsapi: 1,
               }}
             />
           ) : (
@@ -104,10 +134,10 @@ export const ShortsScreen = ({ navigation }: any) => {
         {/* Play/Pause overlay */}
         <TouchableOpacity
           style={styles.playPauseOverlay}
-          onPress={togglePlayPause}
+          onPress={() => togglePlayPause(index)}
           activeOpacity={1}
         >
-          {!playing && (
+          {!isPlaying && isActive && (
             <View style={styles.playIconContainer}>
               <Icon name="play" size={80} color="rgba(255, 255, 255, 0.9)" />
             </View>
@@ -116,22 +146,22 @@ export const ShortsScreen = ({ navigation }: any) => {
 
         {/* Right side actions */}
         <View style={styles.actionsContainer}>
-          <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => {}}>
             <Icon name="thumb-up-outline" size={32} color="#FFFFFF" />
             <Text style={styles.actionText}>Like</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton} onPress={handleDislike}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => {}}>
             <Icon name="thumb-down-outline" size={32} color="#FFFFFF" />
             <Text style={styles.actionText}>Dislike</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton} onPress={handleComment}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => {}}>
             <Icon name="comment-outline" size={32} color="#FFFFFF" />
             <Text style={styles.actionText}>Comment</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => {}}>
             <Icon name="share-outline" size={32} color="#FFFFFF" />
             <Text style={styles.actionText}>Share</Text>
           </TouchableOpacity>
@@ -194,7 +224,7 @@ export const ShortsScreen = ({ navigation }: any) => {
         showsVerticalScrollIndicator={false}
         snapToAlignment="start"
         decelerationRate="fast"
-        snapToInterval={height}
+        snapToInterval={PLAYER_HEIGHT}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
         initialNumToRender={2}
@@ -213,12 +243,12 @@ const styles = StyleSheet.create({
   },
   shortContainer: {
     width,
-    height,
+    height: PLAYER_HEIGHT,
     backgroundColor: '#000000',
   },
   playerContainer: {
     width,
-    height,
+    height: PLAYER_HEIGHT,
     position: 'absolute',
   },
   webView: {
@@ -226,7 +256,7 @@ const styles = StyleSheet.create({
   },
   thumbnail: {
     width,
-    height,
+    height: PLAYER_HEIGHT,
   },
   playPauseOverlay: {
     position: 'absolute',

@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import * as Sharing from 'expo-sharing';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { IconButton, useTheme, ActivityIndicator, Button, TextInput, ProgressBar } from 'react-native-paper';
 import { Video } from '../models/Video';
 import { formatViews, getTimeAgo } from '../models/Video';
@@ -22,6 +23,7 @@ import { usePlaylist } from '../context/PlaylistContext';
 import { useChannel } from '../context/ChannelContext';
 import { Playlist } from '../models/Playlist';
 import { videoDownloadService, DownloadProgress } from '../services/VideoDownloadService';
+import { settingsService } from '../services/SettingsService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -51,6 +53,24 @@ export const VideoPlayerScreen = ({ route }: any) => {
   useEffect(() => {
     loadPlaylists();
     loadVideoPlaylists();
+    
+    let cleanup: (() => void) | undefined;
+    
+    const init = async () => {
+      const settings = await settingsService.getSettings();
+      
+      // Handle keep screen awake
+      if (settings.keepScreenAwake) {
+        await activateKeepAwakeAsync('video-player');
+        cleanup = () => deactivateKeepAwake('video-player');
+      }
+    };
+    
+    init();
+    
+    return () => {
+      if (cleanup) cleanup();
+    };
   }, []);
 
   const loadVideoPlaylists = async () => {
@@ -66,13 +86,16 @@ export const VideoPlayerScreen = ({ route }: any) => {
 
   const videoId = getVideoId(video.url);
 
-  const onStateChange = useCallback((state: string) => {
+  const onStateChange = useCallback(async (state: string) => {
     if (state === 'ended') {
       setIsPlaying(false);
-      // Auto-mark video as watched when it ends
-      markVideoAsWatched(video.id).catch(error => {
-        console.error('Error marking video as watched:', error);
-      });
+      // Check if auto-mark watched is enabled
+      const settings = await settingsService.getSettings();
+      if (settings.autoMarkWatched) {
+        markVideoAsWatched(video.id).catch(error => {
+          console.error('Error marking video as watched:', error);
+        });
+      }
     } else if (state === 'playing') {
       setIsPlaying(true);
     } else if (state === 'paused') {
@@ -249,6 +272,10 @@ export const VideoPlayerScreen = ({ route }: any) => {
               play={isPlaying}
               videoId={videoId}
               onChangeState={onStateChange}
+              webViewProps={{
+                allowsInlineMediaPlayback: true,
+                mediaPlaybackRequiresUserAction: false,
+              }}
             />
           ) : (
             <View style={styles.placeholderVideo}>

@@ -20,6 +20,7 @@ import { SearchScreen } from '../screens/SearchScreen';
 import { LibraryScreen } from '../screens/LibraryScreen';
 import { DownloadsScreen } from '../screens/DownloadsScreen';
 import { ShortsScreen } from '../screens/ShortsScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -75,35 +76,6 @@ const MainTabs = () => {
           headerTitle: 'Srutha',
           headerRight: () => <HeaderActions navigation={navigation} />,
         })}
-      />
-      <Tab.Screen
-        name="Shorts"
-        component={ShortsScreen}
-        options={{
-          title: 'Shorts',
-          tabBarIcon: ({ color }) => (
-            <Icon name="play-box-outline" size={28} color={color} />
-          ),
-          headerShown: false,
-        }}
-      />
-      <Tab.Screen
-        name="Add"
-        component={HomeScreen}
-        options={{
-          title: '',
-          tabBarIcon: () => (
-            <View style={{ width: 36, height: 36, backgroundColor: '#FFFFFF', borderRadius: 18, justifyContent: 'center', alignItems: 'center' }}>
-              <Icon name="plus" size={24} color="#0F0F0F" />
-            </View>
-          ),
-          tabBarButton: (props) => <TouchableOpacity {...props} disabled />,
-        }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-          },
-        }}
       />
       <Tab.Screen
         name="Subscriptions"
@@ -245,6 +217,13 @@ export const AppNavigator = () => {
           options={({ route }: any) => ({
             title: route.params?.playlist?.name || 'Playlist',
           })}
+        />
+        <Stack.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{
+            title: 'Settings',
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

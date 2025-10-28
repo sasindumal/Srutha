@@ -50,7 +50,11 @@ export const LibraryScreen = ({ navigation }: any) => {
 
       <View style={styles.section}>
         <Text style={styles.sectionHeader}>SRUTHA</Text>
-        <TouchableOpacity style={styles.menuItem} activeOpacity={0.7}>
+        <TouchableOpacity 
+          style={styles.menuItem} 
+          activeOpacity={0.7}
+          onPress={() => navigation.navigate('Settings')}
+        >
           <View style={styles.iconContainer}>
             <Icon name="cog" size={24} color="#FFFFFF" />
           </View>
