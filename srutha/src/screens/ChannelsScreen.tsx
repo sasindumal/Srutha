@@ -5,11 +5,13 @@ import { FAB, useTheme } from 'react-native-paper';
 import { useChannel } from '../context/ChannelContext';
 import { ChannelCard } from '../components/ChannelCard';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTabSwipe } from '../hooks/useTabSwipe';
 
 export const ChannelsScreen = ({ navigation }: any) => {
   const { channels, deleteChannel, hideChannel, unhideChannel } = useChannel();
   const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
   const theme = useTheme();
+  const panHandlers = useTabSwipe(navigation);
 
   const handleDeleteChannel = (channelId: string, channelName: string) => {
     Alert.alert(
@@ -96,7 +98,7 @@ export const ChannelsScreen = ({ navigation }: any) => {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} {...panHandlers}>
       {channels.length > 0 && (
         <View style={styles.horizontalSection}>
           <ScrollView

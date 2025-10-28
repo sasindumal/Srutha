@@ -14,6 +14,7 @@ import { useChannel } from '../context/ChannelContext';
 import { VideoCard } from '../components/VideoCard';
 import { Video } from '../models/Video';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTabSwipe } from '../hooks/useTabSwipe';
 
 type SortOrder = 'latest' | 'oldest' | 'views';
 type TimeFilter = 'all' | 'today' | 'week' | 'month' | 'year';
@@ -34,6 +35,9 @@ export const HomeScreen = ({ navigation }: any) => {
   const [displayCount, setDisplayCount] = useState(20);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [noMoreRemote, setNoMoreRemote] = useState(false);
+
+  // Enable edge-swipe to switch bottom tabs, disabled when filter modal is open
+  const panHandlers = useTabSwipe(navigation, !showFilterModal);
 
   useEffect(() => {
     loadVideos();
@@ -248,7 +252,7 @@ export const HomeScreen = ({ navigation }: any) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} {...panHandlers}>
 
       {/* Filter Chips */}
       <ScrollView
