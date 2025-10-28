@@ -10,6 +10,7 @@ import { AddChannelScreen } from '../screens/AddChannelScreen';
 import { VideoPlayerScreen } from '../screens/VideoPlayerScreen';
 import { ChannelVideosScreen } from '../screens/ChannelVideosScreen';
 import { PlaylistsScreen } from '../screens/PlaylistsScreen';
+import { WatchHistoryScreen } from '../screens/WatchHistoryScreen';
 import { CreatePlaylistScreen } from '../screens/CreatePlaylistScreen';
 import { EditPlaylistScreen } from '../screens/EditPlaylistScreen';
 import { PlaylistVideosScreen } from '../screens/PlaylistVideosScreen';
@@ -88,6 +89,17 @@ const MainTabs = () => {
             />
           ),
         })}
+      />
+      <Tab.Screen
+        name="WatchHistory"
+        component={WatchHistoryScreen}
+        options={{
+          title: 'History',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="history" size={size} color={color} />
+          ),
+          headerTitle: 'Watch History',
+        }}
       />
     </Tab.Navigator>
   );

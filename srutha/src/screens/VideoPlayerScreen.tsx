@@ -32,6 +32,9 @@ export const VideoPlayerScreen = ({ route }: any) => {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [videoPlaylists, setVideoPlaylists] = useState<string[]>([]);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState('');
+  const [creatingPlaylist, setCreatingPlaylist] = useState(false);
   const theme = useTheme();
   
   const { 
@@ -112,23 +115,28 @@ export const VideoPlayerScreen = ({ route }: any) => {
   };
 
   const handleCreateNewPlaylist = () => {
-    Alert.prompt(
-      'Create Playlist',
-      'Enter playlist name:',
-      async (text) => {
-        if (text && text.trim()) {
-          try {
-            const newPlaylistId = await createPlaylist({ name: text.trim() });
-            await addVideoToPlaylist(newPlaylistId, video.id);
-            await loadPlaylists();
-            await loadVideoPlaylists();
-          } catch (error) {
-            Alert.alert('Error', 'Failed to create playlist');
-          }
-        }
-      },
-      'plain-text'
-    );
+    setShowCreateForm(true);
+  };
+
+  const submitCreatePlaylist = async () => {
+    const name = newPlaylistName.trim();
+    if (!name) {
+      Alert.alert('Create Playlist', 'Please enter a name');
+      return;
+    }
+    try {
+      setCreatingPlaylist(true);
+      const newPlaylistId = await createPlaylist({ name });
+      await addVideoToPlaylist(newPlaylistId, video.id);
+      await loadPlaylists();
+      await loadVideoPlaylists();
+      setNewPlaylistName('');
+      setShowCreateForm(false);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to create playlist');
+    } finally {
+      setCreatingPlaylist(false);
+    }
   };
 
   const handleShare = async () => {
@@ -369,14 +377,50 @@ export const VideoPlayerScreen = ({ route }: any) => {
               }
             />
 
-            <Button
-              mode="outlined"
-              icon="plus"
-              onPress={handleCreateNewPlaylist}
-              style={styles.createPlaylistButton}
-            >
-              Create New Playlist
-            </Button>
+            {!showCreateForm ? (
+              <Button
+                mode="outlined"
+                icon="plus"
+                onPress={handleCreateNewPlaylist}
+                style={styles.createPlaylistButton}
+              >
+                Create New Playlist
+              </Button>
+            ) : (
+              <View style={styles.createFormContainer}>
+                <Text style={styles.createFormLabel}>Playlist name</Text>
+                <TextInput
+                  mode="outlined"
+                  value={newPlaylistName}
+                  onChangeText={setNewPlaylistName}
+                  placeholder="My playlist"
+                  style={styles.createFormInput}
+                  outlineColor="#3F3F3F"
+                  activeOutlineColor="#3EA6FF"
+                  textColor="#F1F1F1"
+                  placeholderTextColor="#717171"
+                />
+                <View style={styles.createFormActions}>
+                  <Button
+                    mode="text"
+                    onPress={() => {
+                      setShowCreateForm(false);
+                      setNewPlaylistName('');
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    mode="contained"
+                    onPress={submitCreatePlaylist}
+                    loading={creatingPlaylist}
+                    disabled={creatingPlaylist}
+                  >
+                    Save
+                  </Button>
+                </View>
+              </View>
+            )}
           </View>
         </View>
       </Modal>
@@ -550,5 +594,25 @@ const styles = StyleSheet.create({
   createPlaylistButton: {
     marginHorizontal: 16,
     marginTop: 12,
+  },
+  createFormContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 16,
+    gap: 8,
+  },
+  createFormLabel: {
+    color: '#F1F1F1',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  createFormInput: {
+    backgroundColor: '#212121',
+  },
+  createFormActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+    marginTop: 4,
   },
 });
