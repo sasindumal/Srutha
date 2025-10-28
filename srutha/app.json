@@ -4,8 +4,10 @@
     "slug": "srutha",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/logo.jpg",
     "userInterfaceStyle": "automatic",
     "splash": {
+      "image": "./assets/logo.jpg",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },

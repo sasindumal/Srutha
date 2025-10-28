@@ -3,6 +3,7 @@ import { Channel } from '../models/Channel';
 import { Video } from '../models/Video';
 import { databaseHelper } from '../services/DatabaseHelper';
 import { youtubeService } from '../services/YouTubeService';
+import { defaultChannelSeeder } from '../services/DefaultChannelSeeder';
 
 interface ChannelContextType {
   channels: Channel[];
@@ -54,6 +55,15 @@ export const ChannelProvider: React.FC<ChannelProviderProps> = ({ children }) =>
   const initializeApp = async () => {
     try {
       await databaseHelper.initDatabase();
+      
+      // Seed default channels in background (non-blocking)
+      defaultChannelSeeder.seedDefaultChannelsIfNeeded().then(() => {
+        // Reload channels after seeding completes
+        loadChannels();
+        loadVideos();
+      });
+      
+      // Load existing channels immediately
       await loadChannels();
       await loadVideos();
     } catch (err) {

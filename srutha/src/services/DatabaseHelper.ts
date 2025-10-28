@@ -70,6 +70,11 @@ class DatabaseHelper {
 
       CREATE INDEX IF NOT EXISTS idx_playlist_videos_playlistId ON playlist_videos(playlistId);
       CREATE INDEX IF NOT EXISTS idx_playlist_videos_position ON playlist_videos(playlistId, position);
+
+      CREATE TABLE IF NOT EXISTS app_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT
+      );
     `);
   }
 
@@ -152,6 +157,37 @@ class DatabaseHelper {
     await this.db.runAsync('DELETE FROM videos WHERE channelId = ?', id);
     // Then delete channel
     await this.db.runAsync('DELETE FROM channels WHERE id = ?', id);
+  }
+
+  // App settings operations
+  async getSetting(key: string): Promise<string | null> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const result = await this.db.getFirstAsync<{ value: string }>(
+      'SELECT value FROM app_settings WHERE key = ?',
+      key
+    );
+    
+    return result?.value || null;
+  }
+
+  async setSetting(key: string, value: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    await this.db.runAsync(
+      'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
+      key,
+      value
+    );
+  }
+
+  async hasSeededDefaultChannels(): Promise<boolean> {
+    const seeded = await this.getSetting('default_channels_seeded');
+    return seeded === 'true';
+  }
+
+  async markDefaultChannelsSeeded(): Promise<void> {
+    await this.setSetting('default_channels_seeded', 'true');
   }
 
   // Video operations
