@@ -24,12 +24,12 @@ export const ChannelPlaylistScreen = ({ route, navigation }: any) => {
           icon="playlist-plus"
           iconColor="#fff"
           onPress={handleSavePlaylist}
-          disabled={saving}
+          disabled={saving || loading}
         />
       ),
     });
     loadItems();
-  }, []);
+  }, [saving, loading]);
 
   const loadItems = async () => {
     try {
@@ -46,15 +46,49 @@ export const ChannelPlaylistScreen = ({ route, navigation }: any) => {
     }
   };
 
+  const fetchAllPlaylistItems = async (): Promise<Video[]> => {
+    const collected: Video[] = [] as any;
+    youtubeService.resetPlaylistItemsPagination(playlist.id);
+    // First page (if not already loaded into state)
+    if (videos.length === 0) {
+      const first = await youtubeService.getPlaylistItems(playlist.id, 50);
+      collected.push(...(first as any));
+    } else {
+      collected.push(...videos);
+    }
+    // Next pages
+    while (true) {
+      const next = await youtubeService.getPlaylistItemsNext(playlist.id, 50);
+      if (!next || next.length === 0) break;
+      collected.push(...(next as any));
+    }
+    // Persist everything to DB
+    if (collected.length > 0) {
+      await databaseHelper.insertVideos(collected as any);
+    }
+    return collected as any;
+  };
+
   const handleSavePlaylist = async () => {
     try {
       setSaving(true);
-      const newId = await createPlaylist({ name: playlist.title, description: playlist.description });
-      // Ensure current batch of videos are saved (already inserted on load)
-      for (let i = 0; i < videos.length; i++) {
-        await addVideoToPlaylist(newId, videos[i].id);
+      // Ensure we have all items (not just first page)
+      const allItems = await fetchAllPlaylistItems();
+      if (!allItems || allItems.length === 0) {
+        Alert.alert('Nothing to Save', 'This playlist has no videos to save.');
+        return;
       }
-      Alert.alert('Saved', 'Playlist saved to your Playlists');
+
+      const newId = await createPlaylist({ name: playlist.title, description: playlist.description });
+      // Add all items to local playlist
+      for (let i = 0; i < allItems.length; i++) {
+        await addVideoToPlaylist(newId, allItems[i].id);
+      }
+      Alert.alert('Saved', `Playlist saved with ${allItems.length} videos.`);
+      // Navigate to the newly saved playlist so user can see the videos immediately
+      navigation.navigate('PlaylistVideos', {
+        playlist: { id: newId, name: playlist.title, description: playlist.description },
+      });
     } catch (e: any) {
       Alert.alert('Error', e?.message || 'Failed to save playlist');
     } finally {
