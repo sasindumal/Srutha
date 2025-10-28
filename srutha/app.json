@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Srutha",
+    "slug": "srutha",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.srutha.app"
+    },
+    "android": {
+      "package": "com.srutha.app"
+    },
+    "web": {
+    },
+    "plugins": [
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow Srutha to access your microphone."
+        }
+      ]
+    ]
+  }
+}

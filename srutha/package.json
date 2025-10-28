@@ -1,0 +1,51 @@
+{
+  "name": "srutha",
+  "version": "1.0.0",
+  "description": "A YouTube channel subscription manager - Watch videos from your favorite channels",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-navigation/native": "^6.1.9",
+    "@react-navigation/stack": "^6.3.20",
+    "axios": "^1.6.5",
+    "date-fns": "^3.2.0",
+    "expo": "~54.0.0",
+    "expo-asset": "~12.0.9",
+    "expo-av": "~16.0.7",
+    "expo-file-system": "~19.0.17",
+    "expo-sharing": "^14.0.7",
+    "expo-sqlite": "~16.0.8",
+    "expo-status-bar": "~3.0.8",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-gesture-handler": "~2.28.0",
+    "react-native-paper": "^5.12.3",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0",
+    "react-native-vector-icons": "^10.0.3",
+    "react-native-webview": "^13.16.0",
+    "react-native-youtube-iframe": "^2.4.1",
+    "ytdl-core": "^4.11.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "@types/react": "~19.1.10",
+    "@types/react-native": "~0.73.0",
+    "@types/react-native-vector-icons": "^6.4.18",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "babel-preset-expo": "^54.0.6",
+    "eslint": "^8.56.0",
+    "eslint-config-expo": "~10.0.0",
+    "typescript": "~5.9.2"
+  },
+  "private": true
+}
