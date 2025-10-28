@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { Card, IconButton } from 'react-native-paper';
+import { IconButton } from 'react-native-paper';
 import { Video, formatDuration, formatViews, getTimeAgo } from '../models/Video';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -9,30 +9,37 @@ interface VideoCardProps {
   onPress: () => void;
   onToggleWatched?: () => void;
   showWatchedButton?: boolean;
+  onMenuPress?: () => void;
 }
 
 export const VideoCard: React.FC<VideoCardProps> = ({ 
   video, 
   onPress, 
   onToggleWatched,
-  showWatchedButton = true,
+  showWatchedButton = false,
+  onMenuPress,
 }) => {
   const handleToggleWatched = (e: any) => {
     e.stopPropagation();
     onToggleWatched?.();
   };
 
+  const handleMenuPress = (e: any) => {
+    e.stopPropagation();
+    onMenuPress?.();
+  };
+
   return (
     <TouchableOpacity 
       style={[styles.card, video.watched && styles.watchedCard]} 
       onPress={onPress}
-      activeOpacity={0.7}
+      activeOpacity={0.9}
     >
       {/* Thumbnail */}
       <View style={styles.thumbnailContainer}>
         <Image
           source={{ uri: video.thumbnailUrl || 'https://via.placeholder.com/320x180' }}
-          style={[styles.thumbnail, video.watched && styles.watchedThumbnail]}
+          style={styles.thumbnail}
           resizeMode="cover"
         />
         {video.durationSeconds && (
@@ -42,44 +49,46 @@ export const VideoCard: React.FC<VideoCardProps> = ({
             </Text>
           </View>
         )}
-        {video.watched && (
-          <View style={styles.watchedOverlay}>
-            <Icon name="check-circle" size={32} color="#10b981" />
-          </View>
-        )}
       </View>
 
       {/* Video info */}
       <View style={styles.infoContainer}>
-        <View style={styles.titleRow}>
-          <Text style={[styles.title, video.watched && styles.watchedTitle]} numberOfLines={2}>
-            {video.title}
-          </Text>
-          {showWatchedButton && onToggleWatched && (
-            <IconButton
-              icon={video.watched ? 'eye-check' : 'eye-outline'}
-              size={20}
-              iconColor={video.watched ? '#10b981' : '#AAAAAA'}
-              onPress={handleToggleWatched}
-              style={styles.watchedButton}
-            />
-          )}
-        </View>
-        <View style={styles.metaContainer}>
-          <Text style={styles.channelName} numberOfLines={1}>
-            {video.channelName}
-          </Text>
-          <View style={styles.metaRow}>
-            {video.viewCount !== undefined && (
-              <Text style={styles.metaText}>{formatViews(video.viewCount)}</Text>
-            )}
-            {video.viewCount !== undefined && video.uploadDate && (
-              <Text style={styles.metaText}> • </Text>
-            )}
-            {video.uploadDate && (
-              <Text style={styles.metaText}>{getTimeAgo(video.uploadDate)}</Text>
-            )}
+        <View style={styles.infoRow}>
+          {/* Channel avatar placeholder */}
+          <View style={styles.channelAvatar}>
+            <Icon name="account-circle" size={36} color="#717171" />
           </View>
+          
+          <View style={styles.textContainer}>
+            <Text style={[styles.title, video.watched && styles.watchedTitle]} numberOfLines={2}>
+              {video.title}
+            </Text>
+            <View style={styles.metaContainer}>
+              <Text style={styles.channelName} numberOfLines={1}>
+                {video.channelName}
+              </Text>
+              <View style={styles.metaRow}>
+                {video.viewCount !== undefined && (
+                  <Text style={styles.metaText}>{formatViews(video.viewCount)}</Text>
+                )}
+                {video.viewCount !== undefined && video.uploadDate && (
+                  <Text style={styles.metaText}> • </Text>
+                )}
+                {video.uploadDate && (
+                  <Text style={styles.metaText}>{getTimeAgo(video.uploadDate)}</Text>
+                )}
+              </View>
+            </View>
+          </View>
+
+          {/* Three-dot menu */}
+          <IconButton
+            icon="dots-vertical"
+            size={20}
+            iconColor="#AAAAAA"
+            onPress={handleMenuPress}
+            style={styles.menuButton}
+          />
         </View>
       </View>
     </TouchableOpacity>
@@ -89,7 +98,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#0F0F0F',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   watchedCard: {
     opacity: 0.7,
@@ -103,15 +112,6 @@ const styles = StyleSheet.create({
   thumbnail: {
     width: '100%',
     height: '100%',
-  },
-  watchedThumbnail: {
-    opacity: 0.6,
-  },
-  watchedOverlay: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{ translateX: -16 }, { translateY: -16 }],
   },
   durationBadge: {
     position: 'absolute',
@@ -129,28 +129,33 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     paddingHorizontal: 12,
-    paddingTop: 8,
+    paddingTop: 12,
     paddingBottom: 8,
   },
-  titleRow: {
+  infoRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 4,
+  },
+  channelAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#212121',
+    marginRight: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  textContainer: {
+    flex: 1,
   },
   title: {
-    flex: 1,
     fontSize: 14,
     fontWeight: '400',
     color: '#F1F1F1',
     lineHeight: 20,
+    marginBottom: 4,
   },
   watchedTitle: {
-    color: '#AAAAAA',
-  },
-  watchedButton: {
-    margin: 0,
-    marginTop: -8,
-    marginRight: -8,
+    color: '#717171',
   },
   metaContainer: {
     flexDirection: 'column',
@@ -167,5 +172,10 @@ const styles = StyleSheet.create({
   metaText: {
     fontSize: 12,
     color: '#AAAAAA',
+  },
+  menuButton: {
+    margin: 0,
+    marginTop: -8,
+    marginRight: -8,
   },
 });

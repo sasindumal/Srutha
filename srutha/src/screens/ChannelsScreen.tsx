@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { View, FlatList, StyleSheet, Text, Alert, TouchableOpacity, Animated } from 'react-native';
+import { View, FlatList, StyleSheet, Text, Alert, TouchableOpacity, Animated, ScrollView, Image } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { FAB, useTheme } from 'react-native-paper';
 import { useChannel } from '../context/ChannelContext';
@@ -10,6 +10,8 @@ export const ChannelsScreen = ({ navigation }: any) => {
   const { channels, deleteChannel, hideChannel, unhideChannel } = useChannel();
   const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
   const theme = useTheme();
+
+  const visibleChannels = channels.filter(c => !c.hidden);
 
   const handleDeleteChannel = (channelId: string, channelName: string) => {
     Alert.alert(
@@ -71,18 +73,54 @@ export const ChannelsScreen = ({ navigation }: any) => {
     );
   };
 
+  const renderChannelAvatar = ({ item }: any) => (
+    <TouchableOpacity
+      style={styles.avatarContainer}
+      onPress={() => navigation.navigate('ChannelVideos', { channel: item })}
+    >
+      <View style={styles.avatar}>
+        {item.thumbnailUrl ? (
+          <Image source={{ uri: item.thumbnailUrl }} style={styles.avatarImage} />
+        ) : (
+          <Icon name="account-circle" size={56} color="#717171" />
+        )}
+      </View>
+      <Text style={styles.avatarName} numberOfLines={1}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
       <Icon name="youtube-subscription" size={80} color="#9ca3af" />
-      <Text style={styles.emptyTitle}>No channels</Text>
-      <Text style={styles.emptySubtitle}>Add a channel to get started</Text>
+      <Text style={styles.emptyTitle}>No subscriptions</Text>
+      <Text style={styles.emptySubtitle}>Add channels to see their latest videos</Text>
     </View>
   );
 
   return (
     <View style={styles.container}>
+      {visibleChannels.length > 0 && (
+        <View style={styles.horizontalSection}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.horizontalScroll}
+          >
+            {visibleChannels.map((item) => (
+              <View key={item.id}>
+                {renderChannelAvatar({ item })}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>All subscriptions</Text>
+      </View>
+
       <FlatList
-        data={channels}
+        data={visibleChannels}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <Swipeable
@@ -108,7 +146,7 @@ export const ChannelsScreen = ({ navigation }: any) => {
           </Swipeable>
         )}
         ListEmptyComponent={renderEmptyState}
-        contentContainerStyle={channels.length === 0 ? styles.emptyList : undefined}
+        contentContainerStyle={visibleChannels.length === 0 ? styles.emptyList : undefined}
       />
       <FAB
         icon="plus"
@@ -124,6 +162,49 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0F0F0F',
+  },
+  horizontalSection: {
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#272727',
+  },
+  horizontalScroll: {
+    paddingHorizontal: 12,
+  },
+  avatarContainer: {
+    alignItems: 'center',
+    marginHorizontal: 8,
+    width: 72,
+  },
+  avatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#212121',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  avatarImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+  },
+  avatarName: {
+    fontSize: 11,
+    color: '#F1F1F1',
+    textAlign: 'center',
+  },
+  sectionHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#272727',
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#F1F1F1',
   },
   emptyList: {
     flexGrow: 1,

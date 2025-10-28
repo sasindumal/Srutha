@@ -461,6 +461,43 @@ class DatabaseHelper {
     
     return result;
   }
+
+  // Search helpers
+  async searchVideos(query: string, limit: number = 100): Promise<Video[]> {
+    if (!this.db) throw new Error('Database not initialized');
+    const like = `%${query}%`;
+    const result = await this.db.getAllAsync<any>(
+      `SELECT v.* FROM videos v
+       INNER JOIN channels c ON c.id = v.channelId
+       WHERE COALESCE(c.hidden, 0) = 0
+         AND (
+           LOWER(v.title) LIKE LOWER(?) OR
+           LOWER(v.description) LIKE LOWER(?) OR
+           LOWER(v.channelName) LIKE LOWER(?)
+         )
+       ORDER BY v.uploadDate DESC
+       LIMIT ?`,
+      like, like, like, limit
+    );
+    return result.map((video: any) => ({
+      ...video,
+      watched: video.watched === 1,
+    }));
+  }
+
+  async searchChannels(query: string, limit: number = 50): Promise<Channel[]> {
+    if (!this.db) throw new Error('Database not initialized');
+    const like = `%${query}%`;
+    const result = await this.db.getAllAsync<any>(
+      `SELECT * FROM channels 
+       WHERE LOWER(name) LIKE LOWER(?)
+       ORDER BY COALESCE(subscriberCount, 0) DESC, addedDate DESC
+       LIMIT ?`,
+      like,
+      limit
+    );
+    return result.map((c: any) => ({ ...c, hidden: c.hidden === 1 }));
+  }
 }
 
 export const databaseHelper = new DatabaseHelper();

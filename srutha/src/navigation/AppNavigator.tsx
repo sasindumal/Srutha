@@ -2,6 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { View, TouchableOpacity } from 'react-native';
 import { IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { HomeScreen } from '../screens/HomeScreen';
@@ -15,11 +16,21 @@ import { WatchHistoryScreen } from '../screens/WatchHistoryScreen';
 import { CreatePlaylistScreen } from '../screens/CreatePlaylistScreen';
 import { EditPlaylistScreen } from '../screens/EditPlaylistScreen';
 import { PlaylistVideosScreen } from '../screens/PlaylistVideosScreen';
+import { SearchScreen } from '../screens/SearchScreen';
+import { LibraryScreen } from '../screens/LibraryScreen';
+import { DownloadsScreen } from '../screens/DownloadsScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Bottom Tab Navigator
+const HeaderActions = ({ navigation }: any) => (
+  <View style={{ flexDirection: 'row' }}>
+    <IconButton icon="bell-outline" iconColor="#F1F1F1" onPress={() => {}} />
+    <IconButton icon="magnify" iconColor="#F1F1F1" onPress={() => navigation.navigate('Search')} />
+  </View>
+);
+
+// Bottom Tab Navigator - YouTube style: Home, Shorts, +, Subscriptions, Library
 const MainTabs = () => {
   return (
     <Tab.Navigator
@@ -55,52 +66,72 @@ const MainTabs = () => {
       <Tab.Screen
         name="Home"
         component={HomeScreen}
-        options={{
+        options={({ navigation }) => ({
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
             <Icon name="home" size={size} color={color} />
           ),
           headerTitle: 'Srutha',
-        }}
-      />
-      <Tab.Screen
-        name="Channels"
-        component={ChannelsScreen}
-        options={{
-          title: 'Channels',
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="youtube-subscription" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Playlists"
-        component={PlaylistsScreen}
-        options={({ navigation }) => ({
-          title: 'Playlists',
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="playlist-music" size={size} color={color} />
-          ),
-          headerRight: () => (
-            <IconButton
-              icon="plus"
-              size={24}
-              iconColor="#F1F1F1"
-              onPress={() => navigation.navigate('CreatePlaylist')}
-            />
-          ),
+          headerRight: () => <HeaderActions navigation={navigation} />,
         })}
       />
       <Tab.Screen
-        name="WatchHistory"
-        component={WatchHistoryScreen}
+        name="Shorts"
+        component={HomeScreen}
         options={{
-          title: 'History',
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="history" size={size} color={color} />
+          title: 'Shorts',
+          tabBarIcon: ({ color }) => (
+            <Icon name="play-box-outline" size={28} color={color} />
           ),
-          headerTitle: 'Watch History',
+          tabBarButton: (props) => <TouchableOpacity {...props} disabled />,
         }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+          },
+        }}
+      />
+      <Tab.Screen
+        name="Add"
+        component={HomeScreen}
+        options={{
+          title: '',
+          tabBarIcon: () => (
+            <View style={{ width: 36, height: 36, backgroundColor: '#FFFFFF', borderRadius: 18, justifyContent: 'center', alignItems: 'center' }}>
+              <Icon name="plus" size={24} color="#0F0F0F" />
+            </View>
+          ),
+          tabBarButton: (props) => <TouchableOpacity {...props} disabled />,
+        }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+          },
+        }}
+      />
+      <Tab.Screen
+        name="Subscriptions"
+        component={ChannelsScreen}
+        options={({ navigation }) => ({
+          title: 'Subscriptions',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="youtube-subscription" size={size} color={color} />
+          ),
+          headerTitle: 'Subscriptions',
+          headerRight: () => <HeaderActions navigation={navigation} />,
+        })}
+      />
+      <Tab.Screen
+        name="Library"
+        component={LibraryScreen}
+        options={({ navigation }) => ({
+          title: 'Library',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="video-box" size={size} color={color} />
+          ),
+          headerTitle: 'Library',
+          headerRight: () => <HeaderActions navigation={navigation} />,
+        })}
       />
     </Tab.Navigator>
   );
@@ -160,6 +191,43 @@ export const AppNavigator = () => {
           options={({ route }: any) => ({
             title: route.params?.playlist?.title || 'Playlist',
           })}
+        />
+        <Stack.Screen
+          name="Search"
+          component={SearchScreen}
+          options={{ title: 'Search' }}
+        />
+        <Stack.Screen
+          name="LibraryRoot"
+          component={LibraryScreen}
+          options={{ title: 'Library' }}
+        />
+        <Stack.Screen
+          name="PlaylistsRoot"
+          component={PlaylistsScreen}
+          options={({ navigation }) => ({
+            title: 'Playlists',
+            headerRight: () => (
+              <IconButton
+                icon="plus"
+                size={24}
+                iconColor="#F1F1F1"
+                onPress={() => navigation.navigate('CreatePlaylist')}
+              />
+            ),
+          })}
+        />
+        <Stack.Screen
+          name="Downloads"
+          component={DownloadsScreen}
+          options={{ title: 'Downloads' }}
+        />
+        <Stack.Screen
+          name="WatchHistory"
+          component={WatchHistoryScreen}
+          options={{
+            title: 'Watch History',
+          }}
         />
         <Stack.Screen
           name="CreatePlaylist"

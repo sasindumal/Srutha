@@ -249,18 +249,6 @@ export const HomeScreen = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <Searchbar
-          placeholder="Search videos..."
-          onChangeText={setSearchQuery}
-          value={searchQuery}
-          style={styles.searchBar}
-          icon="magnify"
-          iconColor="#AAAAAA"
-          placeholderTextColor="#717171"
-        />
-      </View>
 
       {/* Filter Chips */}
       <ScrollView
