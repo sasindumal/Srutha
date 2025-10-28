@@ -19,6 +19,7 @@ import { PlaylistVideosScreen } from '../screens/PlaylistVideosScreen';
 import { SearchScreen } from '../screens/SearchScreen';
 import { LibraryScreen } from '../screens/LibraryScreen';
 import { DownloadsScreen } from '../screens/DownloadsScreen';
+import { ShortsScreen } from '../screens/ShortsScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -77,18 +78,13 @@ const MainTabs = () => {
       />
       <Tab.Screen
         name="Shorts"
-        component={HomeScreen}
+        component={ShortsScreen}
         options={{
           title: 'Shorts',
           tabBarIcon: ({ color }) => (
             <Icon name="play-box-outline" size={28} color={color} />
           ),
-          tabBarButton: (props) => <TouchableOpacity {...props} disabled />,
-        }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-          },
+          headerShown: false,
         }}
       />
       <Tab.Screen
