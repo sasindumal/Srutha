@@ -49,6 +49,12 @@ export const VideoCard: React.FC<VideoCardProps> = ({
             </Text>
           </View>
         )}
+        {/* Watched badge */}
+        {video.watched && (
+          <View style={styles.watchedBadge}>
+            <Icon name="check-circle" size={20} color="#10b981" />
+          </View>
+        )}
       </View>
 
       {/* Video info */}
@@ -82,13 +88,25 @@ export const VideoCard: React.FC<VideoCardProps> = ({
           </View>
 
           {/* Three-dot menu */}
-          <IconButton
-            icon="dots-vertical"
-            size={20}
-            iconColor="#AAAAAA"
-            onPress={handleMenuPress}
-            style={styles.menuButton}
-          />
+          <View style={styles.menuContainer}>
+            {/* Mark as watched button */}
+            {onToggleWatched && (
+              <IconButton
+                icon={video.watched ? 'eye-check' : 'eye-outline'}
+                size={20}
+                iconColor={video.watched ? '#10b981' : '#AAAAAA'}
+                onPress={handleToggleWatched}
+                style={styles.watchButton}
+              />
+            )}
+            <IconButton
+              icon="dots-vertical"
+              size={20}
+              iconColor="#AAAAAA"
+              onPress={handleMenuPress}
+              style={styles.menuButton}
+            />
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -172,6 +190,22 @@ const styles = StyleSheet.create({
   metaText: {
     fontSize: 12,
     color: '#AAAAAA',
+  },
+  watchedBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.9)',
+    borderRadius: 12,
+    padding: 4,
+  },
+  menuContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  watchButton: {
+    margin: 0,
+    marginTop: -8,
   },
   menuButton: {
     margin: 0,

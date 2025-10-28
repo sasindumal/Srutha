@@ -41,19 +41,72 @@ class SettingsService {
     }
   }
 
-  async getSetting<K extends keyof AppSettings>(key: K): Promise<AppSettings[K]> {
-    if (!this.settings) {
-      await this.loadSettings();
+  async getBackgroundPlayback(): Promise<boolean> {
+    try {
+      const value = await AsyncStorage.getItem('background_playback');
+      return value === 'true'; // Default to false
+    } catch {
+      return false;
     }
-    return this.settings[key];
   }
 
-  async setSetting<K extends keyof AppSettings>(key: K, value: AppSettings[K]): Promise<void> {
-    await this.saveSettings({ [key]: value } as Partial<AppSettings>);
+  async setBackgroundPlayback(enabled: boolean): Promise<void> {
+    try {
+      await AsyncStorage.setItem('background_playback', enabled.toString());
+    } catch (error) {
+      console.error('Error saving background playback setting:', error);
+    }
   }
 
-  getSettings(): AppSettings {
-    return this.settings;
+  async getKeepAwake(): Promise<boolean> {
+    try {
+      const value = await AsyncStorage.getItem('keep_awake');
+      return value === 'true'; // Default to false
+    } catch {
+      return false;
+    }
+  }
+
+  async setKeepAwake(enabled: boolean): Promise<void> {
+    try {
+      await AsyncStorage.setItem('keep_awake', enabled.toString());
+    } catch (error) {
+      console.error('Error saving keep awake setting:', error);
+    }
+  }
+
+  async getAutoMarkWatched(): Promise<boolean> {
+    try {
+      const value = await AsyncStorage.getItem('auto_mark_watched');
+      return value !== 'false'; // Default to true
+    } catch {
+      return true;
+    }
+  }
+
+  async setAutoMarkWatched(enabled: boolean): Promise<void> {
+    try {
+      await AsyncStorage.setItem('auto_mark_watched', enabled.toString());
+    } catch (error) {
+      console.error('Error saving auto mark watched setting:', error);
+    }
+  }
+
+  async getNotificationsEnabled(): Promise<boolean> {
+    try {
+      const value = await AsyncStorage.getItem('notifications_enabled');
+      return value !== 'false'; // Default to true
+    } catch {
+      return true;
+    }
+  }
+
+  async setNotificationsEnabled(enabled: boolean): Promise<void> {
+    try {
+      await AsyncStorage.setItem('notifications_enabled', enabled.toString());
+    } catch (error) {
+      console.error('Error saving notifications setting:', error);
+    }
   }
 }
 

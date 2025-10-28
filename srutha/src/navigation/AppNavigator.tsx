@@ -27,7 +27,6 @@ const Tab = createBottomTabNavigator();
 
 const HeaderActions = ({ navigation }: any) => (
   <View style={{ flexDirection: 'row' }}>
-    <IconButton icon="bell-outline" iconColor="#F1F1F1" onPress={() => {}} />
     <IconButton icon="magnify" iconColor="#F1F1F1" onPress={() => navigation.navigate('Search')} />
   </View>
 );
@@ -71,7 +70,7 @@ const MainTabs = () => {
         options={({ navigation }) => ({
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
-            <Icon name="home" size={size} color={color} />
+            <Icon name="home-outline" size={size} color={color} />
           ),
           headerTitle: 'Srutha',
           headerRight: () => <HeaderActions navigation={navigation} />,
@@ -83,7 +82,7 @@ const MainTabs = () => {
         options={({ navigation }) => ({
           title: 'Subscriptions',
           tabBarIcon: ({ color, size }) => (
-            <Icon name="youtube-subscription" size={size} color={color} />
+            <Icon name="youtube" size={size} color={color} />
           ),
           headerTitle: 'Subscriptions',
           headerRight: () => <HeaderActions navigation={navigation} />,
@@ -95,7 +94,7 @@ const MainTabs = () => {
         options={({ navigation }) => ({
           title: 'Library',
           tabBarIcon: ({ color, size }) => (
-            <Icon name="video-box" size={size} color={color} />
+            <Icon name="play-box-multiple-outline" size={size} color={color} />
           ),
           headerTitle: 'Library',
           headerRight: () => <HeaderActions navigation={navigation} />,

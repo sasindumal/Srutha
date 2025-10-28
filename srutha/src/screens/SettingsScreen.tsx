@@ -5,118 +5,136 @@ import { settingsService, AppSettings } from '../services/SettingsService';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export const SettingsScreen = ({ navigation }: any) => {
-  const [settings, setSettings] = useState<AppSettings>({
-    backgroundPlayback: false,
-    keepScreenAwake: false,
-    autoMarkWatched: true,
-    defaultQuality: 'auto',
-  });
+  const [backgroundPlayback, setBackgroundPlayback] = useState(false);
+  const [keepAwake, setKeepAwake] = useState(false);
+  const [autoMarkWatched, setAutoMarkWatched] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   useEffect(() => {
     loadSettings();
   }, []);
 
   const loadSettings = async () => {
-    const loaded = await settingsService.loadSettings();
-    setSettings(loaded);
+    const bgPlayback = await settingsService.getBackgroundPlayback();
+    const keepAwakeEnabled = await settingsService.getKeepAwake();
+    const autoMark = await settingsService.getAutoMarkWatched();
+    const notifEnabled = await settingsService.getNotificationsEnabled();
+    
+    setBackgroundPlayback(bgPlayback);
+    setKeepAwake(keepAwakeEnabled);
+    setAutoMarkWatched(autoMark);
+    setNotificationsEnabled(notifEnabled);
   };
 
-  const updateSetting = async <K extends keyof AppSettings>(
-    key: K,
-    value: AppSettings[K]
-  ) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
-    await settingsService.setSetting(key, value);
+  const handleBackgroundPlaybackToggle = async (value: boolean) => {
+    setBackgroundPlayback(value);
+    await settingsService.setBackgroundPlayback(value);
+  };
+
+  const handleKeepAwakeToggle = async (value: boolean) => {
+    setKeepAwake(value);
+    await settingsService.setKeepAwake(value);
+  };
+
+  const handleAutoMarkWatchedToggle = async (value: boolean) => {
+    setAutoMarkWatched(value);
+    await settingsService.setAutoMarkWatched(value);
+  };
+
+  const handleNotificationsToggle = async (value: boolean) => {
+    setNotificationsEnabled(value);
+    await settingsService.setNotificationsEnabled(value);
   };
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Playback</Text>
+        <Text style={styles.sectionTitle}>PLAYBACK</Text>
         
         <List.Item
-          title="Background playback"
-          description="Continue playing when app is in background or screen is off"
+          title="Background Playback"
+          description="Keep playing when app is in background (limited)"
           titleStyle={styles.itemTitle}
           descriptionStyle={styles.itemDescription}
-          left={(props) => (
+          style={styles.listItem}
+          left={() => (
             <View style={styles.iconContainer}>
               <Icon name="play-circle-outline" size={24} color="#FFFFFF" />
             </View>
           )}
           right={() => (
             <Switch
-              value={settings.backgroundPlayback}
-              onValueChange={(value) => updateSetting('backgroundPlayback', value)}
+              value={backgroundPlayback}
+              onValueChange={handleBackgroundPlaybackToggle}
               color="#FF0000"
             />
           )}
-          style={styles.listItem}
         />
 
         <List.Item
-          title="Keep screen awake"
-          description="Prevent screen from sleeping during video playback"
+          title="Keep Screen Awake"
+          description="Prevent screen from dimming during playback"
           titleStyle={styles.itemTitle}
           descriptionStyle={styles.itemDescription}
-          left={(props) => (
+          style={styles.listItem}
+          left={() => (
             <View style={styles.iconContainer}>
-              <Icon name="sleep-off" size={24} color="#FFFFFF" />
+              <Icon name="eye-outline" size={24} color="#FFFFFF" />
             </View>
           )}
           right={() => (
             <Switch
-              value={settings.keepScreenAwake}
-              onValueChange={(value) => updateSetting('keepScreenAwake', value)}
+              value={keepAwake}
+              onValueChange={handleKeepAwakeToggle}
               color="#FF0000"
             />
           )}
+        />
+
+        <List.Item
+          title="Auto-mark as Watched"
+          description="Mark videos as watched when playback completes"
+          titleStyle={styles.itemTitle}
+          descriptionStyle={styles.itemDescription}
           style={styles.listItem}
+          left={() => (
+            <View style={styles.iconContainer}>
+              <Icon name="check-circle-outline" size={24} color="#FFFFFF" />
+            </View>
+          )}
+          right={() => (
+            <Switch
+              value={autoMarkWatched}
+              onValueChange={handleAutoMarkWatchedToggle}
+              color="#FF0000"
+            />
+          )}
         />
       </View>
 
       <View style={styles.divider} />
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>History</Text>
+        <Text style={styles.sectionTitle}>NOTIFICATIONS</Text>
         
         <List.Item
-          title="Auto-mark as watched"
-          description="Automatically mark videos as watched when played"
+          title="Push Notifications"
+          description="Get notified when new videos are available"
           titleStyle={styles.itemTitle}
           descriptionStyle={styles.itemDescription}
-          left={(props) => (
+          style={styles.listItem}
+          left={() => (
             <View style={styles.iconContainer}>
-              <Icon name="eye-check-outline" size={24} color="#FFFFFF" />
+              <Icon name="bell-outline" size={24} color="#FFFFFF" />
             </View>
           )}
           right={() => (
             <Switch
-              value={settings.autoMarkWatched}
-              onValueChange={(value) => updateSetting('autoMarkWatched', value)}
+              value={notificationsEnabled}
+              onValueChange={handleNotificationsToggle}
               color="#FF0000"
             />
           )}
-          style={styles.listItem}
-        />
-      </View>
-
-      <View style={styles.divider} />
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>About</Text>
-        
-        <List.Item
-          title="Srutha"
-          description="Version 2.0.0"
-          titleStyle={styles.itemTitle}
-          descriptionStyle={styles.itemDescription}
-          left={(props) => (
-            <View style={styles.iconContainer}>
-              <Icon name="information-outline" size={24} color="#FFFFFF" />
-            </View>
-          )}
-          style={styles.listItem}
         />
       </View>
     </ScrollView>

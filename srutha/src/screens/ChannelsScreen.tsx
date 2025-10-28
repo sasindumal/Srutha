@@ -11,8 +11,6 @@ export const ChannelsScreen = ({ navigation }: any) => {
   const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
   const theme = useTheme();
 
-  const visibleChannels = channels.filter(c => !c.hidden);
-
   const handleDeleteChannel = (channelId: string, channelName: string) => {
     Alert.alert(
       'Delete Channel',
@@ -99,14 +97,14 @@ export const ChannelsScreen = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
-      {visibleChannels.length > 0 && (
+      {channels.length > 0 && (
         <View style={styles.horizontalSection}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.horizontalScroll}
           >
-            {visibleChannels.map((item) => (
+            {channels.map((item) => (
               <View key={item.id}>
                 {renderChannelAvatar({ item })}
               </View>
@@ -120,7 +118,7 @@ export const ChannelsScreen = ({ navigation }: any) => {
       </View>
 
       <FlatList
-        data={visibleChannels}
+        data={channels}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <Swipeable
@@ -146,7 +144,7 @@ export const ChannelsScreen = ({ navigation }: any) => {
           </Swipeable>
         )}
         ListEmptyComponent={renderEmptyState}
-        contentContainerStyle={visibleChannels.length === 0 ? styles.emptyList : undefined}
+        contentContainerStyle={channels.length === 0 ? styles.emptyList : undefined}
       />
       <FAB
         icon="plus"
