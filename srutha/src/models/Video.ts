@@ -9,6 +9,8 @@ export interface Video {
   durationSeconds?: number;
   uploadDate?: string;
   viewCount?: number;
+  watched?: boolean;
+  watchedDate?: string;
 }
 
 export interface VideoInput {
@@ -22,6 +24,8 @@ export interface VideoInput {
   durationSeconds?: number;
   uploadDate?: string;
   viewCount?: number;
+  watched?: boolean;
+  watchedDate?: string;
 }
 
 // Helper functions for video formatting

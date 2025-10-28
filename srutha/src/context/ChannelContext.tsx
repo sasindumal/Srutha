@@ -16,6 +16,10 @@ interface ChannelContextType {
   fetchChannelVideos: (channelId: string, limit?: number) => Promise<void>;
   refreshAllChannels: () => Promise<void>;
   getChannelVideos: (channelId: string) => Promise<Video[]>;
+  markVideoAsWatched: (videoId: string) => Promise<void>;
+  markVideoAsUnwatched: (videoId: string) => Promise<void>;
+  getWatchedVideos: () => Promise<Video[]>;
+  getUnwatchedVideos: () => Promise<Video[]>;
 }
 
 const ChannelContext = createContext<ChannelContextType | undefined>(undefined);
@@ -165,6 +169,42 @@ export const ChannelProvider: React.FC<ChannelProviderProps> = ({ children }) =>
     }
   };
 
+  const markVideoAsWatched = async (videoId: string) => {
+    try {
+      await databaseHelper.markVideoAsWatched(videoId);
+      await loadVideos();
+    } catch (err) {
+      setError(`Failed to mark video as watched: ${err}`);
+    }
+  };
+
+  const markVideoAsUnwatched = async (videoId: string) => {
+    try {
+      await databaseHelper.markVideoAsUnwatched(videoId);
+      await loadVideos();
+    } catch (err) {
+      setError(`Failed to mark video as unwatched: ${err}`);
+    }
+  };
+
+  const getWatchedVideos = async (): Promise<Video[]> => {
+    try {
+      return await databaseHelper.getWatchedVideos();
+    } catch (err) {
+      setError(`Failed to get watched videos: ${err}`);
+      return [];
+    }
+  };
+
+  const getUnwatchedVideos = async (): Promise<Video[]> => {
+    try {
+      return await databaseHelper.getUnwatchedVideos();
+    } catch (err) {
+      setError(`Failed to get unwatched videos: ${err}`);
+      return [];
+    }
+  };
+
   const value: ChannelContextType = {
     channels,
     videos,
@@ -177,6 +217,10 @@ export const ChannelProvider: React.FC<ChannelProviderProps> = ({ children }) =>
     fetchChannelVideos,
     refreshAllChannels,
     getChannelVideos,
+    markVideoAsWatched,
+    markVideoAsUnwatched,
+    getWatchedVideos,
+    getUnwatchedVideos,
   };
 
   return <ChannelContext.Provider value={value}>{children}</ChannelContext.Provider>;

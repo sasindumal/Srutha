@@ -9,11 +9,18 @@ A YouTube channel subscription manager built with React Native and Expo. Watch v
 - 📺 Add YouTube channels by URL or handle
 - 🗑️ Remove channels with swipe-to-delete or delete button
 - 🎬 Browse videos from all your subscribed channels
+- 🔍 **Search videos** by title, channel name, or description
+- 🔄 **Infinite scroll** - loads more videos as you scroll
+- 🎚️ **Filter videos** by:
+  - Channel (select specific channels)
+  - Upload time (today, week, month, year, all time)
+  - Sort order (latest, oldest, most views)
 - ▶️ Watch videos with integrated YouTube player (react-native-youtube-iframe)
-- � Create and manage playlists
+- 📋 Create and manage playlists
 - ➕ Add videos to playlists
 - ✏️ Edit playlist name and description
 - 🗑️ Delete playlists and remove videos from playlists
+- 💾 Download videos for offline viewing
 - 🔗 Share videos with friends
 - 💾 Local SQLite database for offline channel management
 - 🌙 Dark mode support

@@ -10,7 +10,9 @@ class DatabaseHelper {
     if (this.db) return;
     
     this.db = await SQLite.openDatabaseAsync('srutha.db');
+    // Create base tables/indexes, then run migrations to keep old installs compatible
     await this.createTables();
+    await this.migrateVideosSchema();
   }
 
   private async createTables(): Promise<void> {
@@ -38,6 +40,8 @@ class DatabaseHelper {
         durationSeconds INTEGER,
         uploadDate TEXT,
         viewCount INTEGER,
+        watched INTEGER DEFAULT 0,
+        watchedDate TEXT,
         FOREIGN KEY (channelId) REFERENCES channels (id) ON DELETE CASCADE
       );
 
@@ -65,6 +69,27 @@ class DatabaseHelper {
       CREATE INDEX IF NOT EXISTS idx_playlist_videos_playlistId ON playlist_videos(playlistId);
       CREATE INDEX IF NOT EXISTS idx_playlist_videos_position ON playlist_videos(playlistId, position);
     `);
+  }
+
+  // Ensure legacy databases get new columns and indexes without crashing on startup
+  private async migrateVideosSchema(): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    // Check existing columns on videos table
+    const columns = await this.db.getAllAsync<any>(`PRAGMA table_info(videos)`);
+    const hasWatched = columns.some((c: any) => c.name === 'watched');
+    const hasWatchedDate = columns.some((c: any) => c.name === 'watchedDate');
+
+    // Add missing columns (SQLite allows ADD COLUMN with default applied to new rows)
+    if (!hasWatched) {
+      await this.db.runAsync(`ALTER TABLE videos ADD COLUMN watched INTEGER DEFAULT 0`);
+    }
+    if (!hasWatchedDate) {
+      await this.db.runAsync(`ALTER TABLE videos ADD COLUMN watchedDate TEXT`);
+    }
+
+    // Create the watched index after columns are guaranteed to exist
+    await this.db.execAsync(`CREATE INDEX IF NOT EXISTS idx_videos_watched ON videos(watched);`);
   }
 
   // Channel operations
@@ -121,8 +146,8 @@ class DatabaseHelper {
     if (!this.db) throw new Error('Database not initialized');
 
     await this.db.runAsync(
-      `INSERT OR REPLACE INTO videos (id, title, channelId, channelName, description, thumbnailUrl, url, durationSeconds, uploadDate, viewCount)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT OR REPLACE INTO videos (id, title, channelId, channelName, description, thumbnailUrl, url, durationSeconds, uploadDate, viewCount, watched, watchedDate)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       video.id,
       video.title,
       video.channelId,
@@ -132,7 +157,9 @@ class DatabaseHelper {
       video.url,
       video.durationSeconds || null,
       video.uploadDate || null,
-      video.viewCount || null
+      video.viewCount || null,
+      video.watched ? 1 : 0,
+      video.watchedDate || null
     );
   }
 
@@ -147,22 +174,28 @@ class DatabaseHelper {
   async getAllVideos(): Promise<Video[]> {
     if (!this.db) throw new Error('Database not initialized');
 
-    const result = await this.db.getAllAsync<Video>(
+    const result = await this.db.getAllAsync<any>(
       'SELECT * FROM videos ORDER BY uploadDate DESC'
     );
     
-    return result;
+    return result.map((video: any) => ({
+      ...video,
+      watched: video.watched === 1,
+    }));
   }
 
   async getChannelVideos(channelId: string): Promise<Video[]> {
     if (!this.db) throw new Error('Database not initialized');
 
-    const result = await this.db.getAllAsync<Video>(
+    const result = await this.db.getAllAsync<any>(
       'SELECT * FROM videos WHERE channelId = ? ORDER BY uploadDate DESC',
       channelId
     );
     
-    return result;
+    return result.map((video: any) => ({
+      ...video,
+      watched: video.watched === 1,
+    }));
   }
 
   async deleteVideo(id: string): Promise<void> {
@@ -181,6 +214,51 @@ class DatabaseHelper {
     if (!this.db) throw new Error('Database not initialized');
 
     await this.db.runAsync('DELETE FROM videos');
+  }
+
+  async markVideoAsWatched(videoId: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    await this.db.runAsync(
+      'UPDATE videos SET watched = 1, watchedDate = ? WHERE id = ?',
+      new Date().toISOString(),
+      videoId
+    );
+  }
+
+  async markVideoAsUnwatched(videoId: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    await this.db.runAsync(
+      'UPDATE videos SET watched = 0, watchedDate = NULL WHERE id = ?',
+      videoId
+    );
+  }
+
+  async getWatchedVideos(): Promise<Video[]> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const result = await this.db.getAllAsync<any>(
+      'SELECT * FROM videos WHERE watched = 1 ORDER BY watchedDate DESC'
+    );
+    
+    return result.map((video: any) => ({
+      ...video,
+      watched: video.watched === 1,
+    }));
+  }
+
+  async getUnwatchedVideos(): Promise<Video[]> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const result = await this.db.getAllAsync<any>(
+      'SELECT * FROM videos WHERE watched = 0 OR watched IS NULL ORDER BY uploadDate DESC'
+    );
+    
+    return result.map((video: any) => ({
+      ...video,
+      watched: video.watched === 1,
+    }));
   }
 
   // Playlist operations
@@ -314,7 +392,7 @@ class DatabaseHelper {
   async getPlaylistVideos(playlistId: string): Promise<Video[]> {
     if (!this.db) throw new Error('Database not initialized');
 
-    const result = await this.db.getAllAsync<Video>(
+    const result = await this.db.getAllAsync<any>(
       `SELECT v.* FROM videos v
        INNER JOIN playlist_videos pv ON v.id = pv.videoId
        WHERE pv.playlistId = ?
@@ -322,7 +400,10 @@ class DatabaseHelper {
       playlistId
     );
     
-    return result;
+    return result.map((video: any) => ({
+      ...video,
+      watched: video.watched === 1,
+    }));
   }
 
   async isVideoInPlaylist(playlistId: string, videoId: string): Promise<boolean> {

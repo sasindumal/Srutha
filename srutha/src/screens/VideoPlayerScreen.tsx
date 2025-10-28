@@ -19,6 +19,7 @@ import { IconButton, useTheme, ActivityIndicator, Button, TextInput, ProgressBar
 import { Video } from '../models/Video';
 import { formatViews, getTimeAgo } from '../models/Video';
 import { usePlaylist } from '../context/PlaylistContext';
+import { useChannel } from '../context/ChannelContext';
 import { Playlist } from '../models/Playlist';
 import { videoDownloadService, DownloadProgress } from '../services/VideoDownloadService';
 
@@ -42,6 +43,8 @@ export const VideoPlayerScreen = ({ route }: any) => {
     createPlaylist,
   } = usePlaylist();
 
+  const { markVideoAsWatched } = useChannel();
+
   useEffect(() => {
     loadPlaylists();
     loadVideoPlaylists();
@@ -63,12 +66,16 @@ export const VideoPlayerScreen = ({ route }: any) => {
   const onStateChange = useCallback((state: string) => {
     if (state === 'ended') {
       setIsPlaying(false);
+      // Auto-mark video as watched when it ends
+      markVideoAsWatched(video.id).catch(error => {
+        console.error('Error marking video as watched:', error);
+      });
     } else if (state === 'playing') {
       setIsPlaying(true);
     } else if (state === 'paused') {
       setIsPlaying(false);
     }
-  }, []);
+  }, [video.id, markVideoAsWatched]);
 
   const handleOpenInYouTube = () => {
     Linking.openURL(video.url);
