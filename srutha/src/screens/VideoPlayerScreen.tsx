@@ -15,12 +15,12 @@ import {
 } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system';
-import { IconButton, useTheme, ActivityIndicator, Button, TextInput } from 'react-native-paper';
+import { IconButton, useTheme, ActivityIndicator, Button, TextInput, ProgressBar } from 'react-native-paper';
 import { Video } from '../models/Video';
 import { formatViews, getTimeAgo } from '../models/Video';
 import { usePlaylist } from '../context/PlaylistContext';
 import { Playlist } from '../models/Playlist';
+import { videoDownloadService, DownloadProgress } from '../services/VideoDownloadService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -28,6 +28,7 @@ export const VideoPlayerScreen = ({ route }: any) => {
   const { video } = route.params as { video: Video };
   const [isPlaying, setIsPlaying] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [videoPlaylists, setVideoPlaylists] = useState<string[]>([]);
   const theme = useTheme();
@@ -153,20 +154,73 @@ export const VideoPlayerScreen = ({ route }: any) => {
   };
 
   const handleDownload = async () => {
+    if (isDownloading) {
+      // Cancel download
+      Alert.alert(
+        'Cancel Download',
+        'Are you sure you want to cancel this download?',
+        [
+          { text: 'No', style: 'cancel' },
+          {
+            text: 'Yes, Cancel',
+            style: 'destructive',
+            onPress: async () => {
+              await videoDownloadService.cancelDownload(video.id);
+              setIsDownloading(false);
+              setDownloadProgress(0);
+            },
+          },
+        ]
+      );
+      return;
+    }
+
     Alert.alert(
       'Download Video',
-      'Note: Direct video download requires YouTube Premium or third-party services. Would you like to open this video in YouTube?',
+      'To download YouTube videos, you need to:\n\n' +
+      '1. Set up a backend extractor service (using youtube-dl or NewPipe Extractor)\n' +
+      '2. Or use YouTube Premium\'s offline feature\n\n' +
+      'Note: Direct downloading may violate YouTube\'s Terms of Service.\n\n' +
+      'Would you like to open this video in YouTube instead?',
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Open in YouTube', onPress: handleOpenInYouTube },
+        {
+          text: 'Try Download (Demo)',
+          onPress: handleDownloadDemo,
+        },
       ]
     );
-    
-    // Note: Downloading YouTube videos programmatically violates YouTube's Terms of Service
-    // For legitimate downloads, users should:
-    // 1. Use YouTube Premium's offline feature
-    // 2. Use authorized third-party services
-    // 3. Only download videos they have rights to
+  };
+
+  const handleDownloadDemo = async () => {
+    try {
+      setIsDownloading(true);
+      setDownloadProgress(0);
+
+      const onProgress = (progress: DownloadProgress) => {
+        setDownloadProgress(progress.progress);
+      };
+
+      // This will show an error about needing backend setup
+      // In production, you'd call: videoDownloadService.downloadVideoWithExtractor()
+      await videoDownloadService.downloadVideoWithExtractor(
+        video.id,
+        video.title,
+        '720p',
+        onProgress
+      );
+
+      Alert.alert('Success', 'Video downloaded successfully!');
+    } catch (error: any) {
+      Alert.alert(
+        'Download Failed',
+        error.message || 'Failed to download video. Please set up a backend extractor service.'
+      );
+    } finally {
+      setIsDownloading(false);
+      setDownloadProgress(0);
+    }
   };
 
   return (
@@ -241,6 +295,16 @@ export const VideoPlayerScreen = ({ route }: any) => {
               </Text>
             </TouchableOpacity>
           </View>
+
+          {/* Download Progress Bar */}
+          {isDownloading && downloadProgress > 0 && (
+            <View style={styles.downloadProgressContainer}>
+              <Text style={styles.downloadProgressText}>
+                Downloading: {Math.round(downloadProgress * 100)}%
+              </Text>
+              <ProgressBar progress={downloadProgress} color={theme.colors.primary} />
+            </View>
+          )}
 
           {/* Description */}
           {video.description && (
@@ -385,6 +449,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#4b5563',
     marginTop: -8,
+  },
+  downloadProgressContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+  },
+  downloadProgressText: {
+    fontSize: 14,
+    color: '#111827',
+    marginBottom: 8,
+    fontWeight: '500',
   },
   descriptionContainer: {
     backgroundColor: '#ffffff',
