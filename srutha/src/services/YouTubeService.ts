@@ -11,6 +11,8 @@ import { YOUTUBE_API_KEY } from '../config';
 class YouTubeService {
   private readonly API_BASE = 'https://www.youtube.com';
   private readonly GOOGLE_API_BASE = 'https://www.googleapis.com/youtube/v3';
+  // Track pagination per channel in-memory
+  private nextPageTokenByChannel: Map<string, string | null> = new Map();
   
   /**
    * Extract channel ID from various YouTube URL formats
@@ -117,7 +119,7 @@ class YouTubeService {
   /**
    * Get videos from a channel (latest by date)
    */
-  async getChannelVideos(channelId: string, limit: number = 30): Promise<VideoInput[]> {
+  async getChannelVideos(channelId: string, limit: number = 30, pageToken?: string): Promise<VideoInput[]> {
     try {
       const max = Math.min(Math.max(limit, 1), 50); // YouTube API caps at 50 per request
 
@@ -129,11 +131,15 @@ class YouTubeService {
           maxResults: max,
           order: 'date',
           type: 'video',
+          pageToken,
           key: YOUTUBE_API_KEY,
         },
       });
 
       const items: any[] = searchResp.data.items || [];
+      // Save nextPageToken for subsequent fetches
+      const nextToken: string | undefined = searchResp.data.nextPageToken;
+      this.nextPageTokenByChannel.set(channelId, nextToken ?? null);
       if (items.length === 0) return [];
 
       const baseVideos: VideoInput[] = items.map((it) => {
@@ -181,6 +187,22 @@ class YouTubeService {
     } catch (error: any) {
       const message = error?.response?.data?.error?.message || error?.message || String(error);
       throw new Error(`Failed to fetch channel videos: ${message}`);
+    }
+  }
+
+  // Fetch next page for a channel, returns [] when no more pages
+  async getChannelVideosNext(channelId: string, pageSize: number = 30): Promise<VideoInput[]> {
+    const token = this.nextPageTokenByChannel.get(channelId);
+    // If token is explicitly null, no more pages. If undefined, it's first fetch, so pass undefined to start.
+    if (token === null) return [];
+    return this.getChannelVideos(channelId, pageSize, token ?? undefined);
+  }
+
+  resetChannelPagination(channelId?: string) {
+    if (channelId) {
+      this.nextPageTokenByChannel.delete(channelId);
+    } else {
+      this.nextPageTokenByChannel.clear();
     }
   }
 

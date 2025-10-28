@@ -19,7 +19,7 @@ type SortOrder = 'latest' | 'oldest' | 'views';
 type TimeFilter = 'all' | 'today' | 'week' | 'month' | 'year';
 
 export const HomeScreen = ({ navigation }: any) => {
-  const { channels, videos, isLoading, refreshAllChannels, loadVideos, markVideoAsWatched, markVideoAsUnwatched } = useChannel();
+  const { channels, videos, isLoading, refreshAllChannels, loadVideos, markVideoAsWatched, markVideoAsUnwatched, loadMoreForChannels } = useChannel();
   const theme = useTheme();
   
   // State for search and filters
@@ -33,6 +33,7 @@ export const HomeScreen = ({ navigation }: any) => {
   // State for infinite scroll
   const [displayCount, setDisplayCount] = useState(20);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [noMoreRemote, setNoMoreRemote] = useState(false);
 
   useEffect(() => {
     loadVideos();
@@ -122,13 +123,40 @@ export const HomeScreen = ({ navigation }: any) => {
   // Paginated videos for infinite scroll
   const displayedVideos = filteredAndSortedVideos.slice(0, displayCount);
 
-  const handleLoadMore = () => {
-    if (displayCount < filteredAndSortedVideos.length && !isLoadingMore) {
+  // Reset pagination view when filters/search change
+  useEffect(() => {
+    setDisplayCount(20);
+    setNoMoreRemote(false);
+  }, [searchQuery, selectedChannels, timeFilter, sortOrder, showWatched]);
+
+  const handleLoadMore = async () => {
+    if (isLoadingMore) return;
+
+    // If we still have undisplayed items locally, just increase the window
+    if (displayCount < filteredAndSortedVideos.length) {
       setIsLoadingMore(true);
-      setTimeout(() => {
-        setDisplayCount((prev) => prev + 20);
-        setIsLoadingMore(false);
-      }, 300);
+      setDisplayCount((prev) => prev + 20);
+      setIsLoadingMore(false);
+      return;
+    }
+
+    // Otherwise, try to fetch more from YouTube using pagination
+    if (channels.length === 0 || noMoreRemote) return;
+    setIsLoadingMore(true);
+    try {
+      const targetChannelIds = selectedChannels.length > 0 ? selectedChannels : channels.map((c) => c.id);
+      const fetched = await loadMoreForChannels(targetChannelIds, 30);
+      if (fetched > 0) {
+        // Reveal newly fetched items
+        setDisplayCount((prev) => prev + fetched);
+      } else {
+        setNoMoreRemote(true);
+      }
+    } catch (e) {
+      // Swallow to avoid UI crash; footer will not change
+      console.warn('Failed to load more videos:', e);
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
@@ -206,7 +234,10 @@ export const HomeScreen = ({ navigation }: any) => {
         </View>
       );
     }
-    if (displayCount >= filteredAndSortedVideos.length && filteredAndSortedVideos.length > 0) {
+    if (
+      (noMoreRemote || displayCount >= filteredAndSortedVideos.length) &&
+      filteredAndSortedVideos.length > 0
+    ) {
       return (
         <View style={styles.footerLoader}>
           <Text style={styles.footerText}>No more videos</Text>

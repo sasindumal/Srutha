@@ -13,7 +13,11 @@ interface ChannelContextType {
   loadVideos: () => Promise<void>;
   addChannel: (channelInput: string) => Promise<boolean>;
   deleteChannel: (channelId: string) => Promise<void>;
+  hideChannel: (channelId: string) => Promise<void>;
+  unhideChannel: (channelId: string) => Promise<void>;
   fetchChannelVideos: (channelId: string, limit?: number) => Promise<void>;
+  loadMoreChannelVideos: (channelId: string, pageSize?: number) => Promise<number>;
+  loadMoreForChannels: (channelIds: string[], pageSize?: number) => Promise<number>;
   refreshAllChannels: () => Promise<void>;
   getChannelVideos: (channelId: string) => Promise<Video[]>;
   markVideoAsWatched: (videoId: string) => Promise<void>;
@@ -128,14 +132,59 @@ export const ChannelProvider: React.FC<ChannelProviderProps> = ({ children }) =>
     }
   };
 
+  const hideChannel = async (channelId: string) => {
+    try {
+      await databaseHelper.hideChannel(channelId);
+      await loadChannels();
+      await loadVideos();
+    } catch (err) {
+      setError(`Failed to hide channel: ${err}`);
+    }
+  };
+
+  const unhideChannel = async (channelId: string) => {
+    try {
+      await databaseHelper.unhideChannel(channelId);
+      await loadChannels();
+      await loadVideos();
+    } catch (err) {
+      setError(`Failed to unhide channel: ${err}`);
+    }
+  };
+
   const fetchChannelVideos = async (channelId: string, limit: number = 30) => {
     try {
+      // reset pagination for fresh fetch
+      youtubeService.resetChannelPagination(channelId);
       const videos = await youtubeService.getChannelVideos(channelId, limit);
       await databaseHelper.insertVideos(videos);
       await loadVideos();
     } catch (err) {
       setError(`Failed to fetch videos: ${err}`);
     }
+  };
+
+  const loadMoreChannelVideos = async (channelId: string, pageSize: number = 30): Promise<number> => {
+    try {
+      const more = await youtubeService.getChannelVideosNext(channelId, pageSize);
+      if (more.length > 0) {
+        await databaseHelper.insertVideos(more);
+        await loadVideos();
+      }
+      return more.length;
+    } catch (err) {
+      console.warn(`Failed to load more videos for channel ${channelId}:`, err);
+      return 0;
+    }
+  };
+
+  const loadMoreForChannels = async (channelIds: string[], pageSize: number = 30): Promise<number> => {
+    let total = 0;
+    for (const id of channelIds) {
+      const count = await loadMoreChannelVideos(id, pageSize);
+      total += count;
+    }
+    return total;
   };
 
   const refreshAllChannels = async () => {
@@ -214,7 +263,11 @@ export const ChannelProvider: React.FC<ChannelProviderProps> = ({ children }) =>
     loadVideos,
     addChannel,
     deleteChannel,
+  hideChannel,
+  unhideChannel,
     fetchChannelVideos,
+  loadMoreChannelVideos,
+  loadMoreForChannels,
     refreshAllChannels,
     getChannelVideos,
     markVideoAsWatched,

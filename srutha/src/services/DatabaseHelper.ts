@@ -12,6 +12,7 @@ class DatabaseHelper {
     this.db = await SQLite.openDatabaseAsync('srutha.db');
     // Create base tables/indexes, then run migrations to keep old installs compatible
     await this.createTables();
+    await this.migrateChannelsSchema();
     await this.migrateVideosSchema();
   }
 
@@ -26,7 +27,8 @@ class DatabaseHelper {
         thumbnailUrl TEXT,
         url TEXT NOT NULL,
         subscriberCount INTEGER,
-        addedDate TEXT NOT NULL
+        addedDate TEXT NOT NULL,
+        hidden INTEGER DEFAULT 0
       );
 
       CREATE TABLE IF NOT EXISTS videos (
@@ -71,6 +73,16 @@ class DatabaseHelper {
     `);
   }
 
+  private async migrateChannelsSchema(): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+    const columns = await this.db.getAllAsync<any>(`PRAGMA table_info(channels)`);
+    const hasHidden = columns.some((c: any) => c.name === 'hidden');
+    if (!hasHidden) {
+      await this.db.runAsync(`ALTER TABLE channels ADD COLUMN hidden INTEGER DEFAULT 0`);
+      await this.db.execAsync(`CREATE INDEX IF NOT EXISTS idx_channels_hidden ON channels(hidden);`);
+    }
+  }
+
   // Ensure legacy databases get new columns and indexes without crashing on startup
   private async migrateVideosSchema(): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
@@ -99,26 +111,27 @@ class DatabaseHelper {
     const addedDate = channel.addedDate || new Date().toISOString();
     
     await this.db.runAsync(
-      `INSERT OR REPLACE INTO channels (id, name, description, thumbnailUrl, url, subscriberCount, addedDate)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT OR REPLACE INTO channels (id, name, description, thumbnailUrl, url, subscriberCount, addedDate, hidden)
+       VALUES (?, ?, ?, ?, ?, ?, ?, COALESCE(?, 0))`,
       channel.id || '',
       channel.name,
       channel.description || null,
       channel.thumbnailUrl || null,
       channel.url,
       channel.subscriberCount || null,
-      addedDate
+      addedDate,
+      channel.hidden ? 1 : 0
     );
   }
 
   async getAllChannels(): Promise<Channel[]> {
     if (!this.db) throw new Error('Database not initialized');
 
-    const result = await this.db.getAllAsync<Channel>(
+    const result = await this.db.getAllAsync<any>(
       'SELECT * FROM channels ORDER BY addedDate DESC'
     );
     
-    return result;
+    return result.map((c: any) => ({ ...c, hidden: c.hidden === 1 }));
   }
 
   async getChannel(id: string): Promise<Channel | null> {
@@ -175,7 +188,10 @@ class DatabaseHelper {
     if (!this.db) throw new Error('Database not initialized');
 
     const result = await this.db.getAllAsync<any>(
-      'SELECT * FROM videos ORDER BY uploadDate DESC'
+      `SELECT v.* FROM videos v
+       INNER JOIN channels c ON c.id = v.channelId
+       WHERE COALESCE(c.hidden, 0) = 0
+       ORDER BY v.uploadDate DESC`
     );
     
     return result.map((video: any) => ({
@@ -252,13 +268,27 @@ class DatabaseHelper {
     if (!this.db) throw new Error('Database not initialized');
 
     const result = await this.db.getAllAsync<any>(
-      'SELECT * FROM videos WHERE watched = 0 OR watched IS NULL ORDER BY uploadDate DESC'
+      `SELECT v.* FROM videos v
+       INNER JOIN channels c ON c.id = v.channelId
+       WHERE (v.watched = 0 OR v.watched IS NULL)
+         AND COALESCE(c.hidden, 0) = 0
+       ORDER BY v.uploadDate DESC`
     );
     
     return result.map((video: any) => ({
       ...video,
       watched: video.watched === 1,
     }));
+  }
+
+  async hideChannel(id: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+    await this.db.runAsync('UPDATE channels SET hidden = 1 WHERE id = ?', id);
+  }
+
+  async unhideChannel(id: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+    await this.db.runAsync('UPDATE channels SET hidden = 0 WHERE id = ?', id);
   }
 
   // Playlist operations

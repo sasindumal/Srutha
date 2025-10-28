@@ -6,6 +6,7 @@ export interface Channel {
   url: string;
   subscriberCount?: number;
   addedDate: string;
+  hidden?: boolean;
 }
 
 export interface ChannelInput {
@@ -16,4 +17,5 @@ export interface ChannelInput {
   url: string;
   subscriberCount?: number;
   addedDate?: string;
+  hidden?: boolean;
 }

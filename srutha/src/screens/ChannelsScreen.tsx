@@ -7,7 +7,7 @@ import { ChannelCard } from '../components/ChannelCard';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export const ChannelsScreen = ({ navigation }: any) => {
-  const { channels, deleteChannel } = useChannel();
+  const { channels, deleteChannel, hideChannel, unhideChannel } = useChannel();
   const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
   const theme = useTheme();
 
@@ -34,6 +34,14 @@ export const ChannelsScreen = ({ navigation }: any) => {
         },
       ]
     );
+  };
+
+  const handleToggleHidden = async (channelId: string, hidden: boolean) => {
+    if (hidden) {
+      await unhideChannel(channelId);
+    } else {
+      await hideChannel(channelId);
+    }
   };
 
   const renderRightActions = (channelId: string, channelName: string, progress: Animated.AnimatedInterpolation<number>, dragX: Animated.AnimatedInterpolation<number>) => {
@@ -95,6 +103,7 @@ export const ChannelsScreen = ({ navigation }: any) => {
                 navigation.navigate('ChannelVideos', { channel: item })
               }
               onDelete={() => handleDeleteChannel(item.id, item.name)}
+              onToggleHidden={() => handleToggleHidden(item.id, item.hidden ?? false)}
             />
           </Swipeable>
         )}

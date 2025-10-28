@@ -8,6 +8,7 @@ interface ChannelCardProps {
   onPress: () => void;
   onLongPress?: () => void;
   onDelete?: () => void;
+  onToggleHidden?: () => void;
 }
 
 export const ChannelCard: React.FC<ChannelCardProps> = ({
@@ -15,15 +16,20 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
   onPress,
   onLongPress,
   onDelete,
+  onToggleHidden,
 }) => {
   const handleDelete = (e: any) => {
     e.stopPropagation();
     onDelete?.();
   };
+  const handleToggleHidden = (e: any) => {
+    e.stopPropagation();
+    onToggleHidden?.();
+  };
 
   return (
     <TouchableOpacity 
-      style={styles.card} 
+      style={[styles.card, channel.hidden && styles.hiddenCard]} 
       onPress={onPress} 
       onLongPress={onLongPress}
       activeOpacity={0.7}
@@ -41,9 +47,18 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
         {/* Channel info */}
         <View style={styles.infoContainer}>
           <View style={styles.headerRow}>
-            <Text style={styles.channelName} numberOfLines={1}>
+            <Text style={[styles.channelName, channel.hidden && styles.hiddenText]} numberOfLines={1}>
               {channel?.name ?? 'Unknown Channel'}
             </Text>
+            {onToggleHidden && (
+              <IconButton
+                icon={channel.hidden ? 'eye' : 'eye-off'}
+                size={20}
+                iconColor={channel.hidden ? '#3EA6FF' : '#AAAAAA'}
+                onPress={handleToggleHidden}
+                style={styles.hideButton}
+              />
+            )}
             {onDelete && (
               <IconButton
                 icon="delete-outline"
@@ -57,16 +72,16 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
 
           {/* Subscriber count */}
           {typeof channel?.subscriberCount === 'number' ? (
-            <Text style={styles.subscriberCount}>
+            <Text style={[styles.subscriberCount, channel.hidden && styles.hiddenText]}>
               {formatSubscribers(channel.subscriberCount)} subscribers
             </Text>
           ) : (
-            <Text style={styles.subscriberCount}>0 subscribers</Text>
+            <Text style={[styles.subscriberCount, channel.hidden && styles.hiddenText]}>0 subscribers</Text>
           )}
 
           {/* Description */}
           {channel?.description ? (
-            <Text style={styles.description} numberOfLines={2}>
+            <Text style={[styles.description, channel.hidden && styles.hiddenText]} numberOfLines={2}>
               {channel.description}
             </Text>
           ) : null}
@@ -92,6 +107,9 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#0F0F0F',
     marginBottom: 16,
+  },
+  hiddenCard: {
+    opacity: 0.6,
   },
   container: {
     flexDirection: 'row',
@@ -121,9 +139,15 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#F1F1F1',
   },
+  hiddenText: {
+    color: '#9E9E9E',
+  },
   deleteButton: {
     margin: 0,
     marginRight: -8,
+  },
+  hideButton: {
+    margin: 0,
   },
   subscriberCount: {
     fontSize: 12,
