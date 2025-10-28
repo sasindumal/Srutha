@@ -190,6 +190,17 @@ class DatabaseHelper {
     await this.setSetting('default_channels_seeded', 'true');
   }
 
+  /**
+   * Utility used by the seeder to determine whether any channels exist yet.
+   */
+  async getChannelCount(): Promise<number> {
+    if (!this.db) throw new Error('Database not initialized');
+    const row = await this.db.getFirstAsync<{ count: number }>(
+      'SELECT COUNT(*) as count FROM channels'
+    );
+    return Number(row?.count ?? 0);
+  }
+
   // Video operations
   async insertVideo(video: VideoInput): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');

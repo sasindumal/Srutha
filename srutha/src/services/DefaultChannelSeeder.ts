@@ -12,11 +12,19 @@ class DefaultChannelSeeder {
    */
   async seedDefaultChannelsIfNeeded(): Promise<void> {
     try {
-      // Check if already seeded
-      const hasSeeded = await databaseHelper.hasSeededDefaultChannels();
-      if (hasSeeded) {
+      // Check if already seeded, but only trust the flag if channels actually exist
+      const [hasSeeded, existingCount] = await Promise.all([
+        databaseHelper.hasSeededDefaultChannels(),
+        databaseHelper.getChannelCount(),
+      ]);
+
+      if (hasSeeded && existingCount > 0) {
         console.log('Default channels already seeded');
         return;
+      }
+
+      if (hasSeeded && existingCount === 0) {
+        console.warn('Seed flag was set but no channels found; reseeding default channels');
       }
 
       console.log(`Seeding ${DEFAULT_CHANNELS.length} default channels...`);
@@ -54,8 +62,12 @@ class DefaultChannelSeeder {
         }
       }
 
-      // Mark as seeded even if some failed (don't retry on every launch)
-      await databaseHelper.markDefaultChannelsSeeded();
+      // Only mark as seeded if at least one channel was added successfully
+      if (successCount > 0) {
+        await databaseHelper.markDefaultChannelsSeeded();
+      } else {
+        console.warn('No default channels were seeded successfully; will retry next launch');
+      }
       
       console.log(`Default channels seeding complete: ${successCount} success, ${failCount} failed`);
     } catch (error) {

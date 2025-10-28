@@ -32,6 +32,19 @@ class SettingsService {
     }
   }
 
+  /**
+   * Backwards-compatible API used by some screens.
+   * Returns cached settings if already loaded, otherwise loads from storage.
+   */
+  async getSettings(): Promise<AppSettings> {
+    // If settings have been loaded or modified in-memory, return them
+    if (this.settings) {
+      return this.settings;
+    }
+    // Fallback: load from storage
+    return this.loadSettings();
+  }
+
   async saveSettings(settings: Partial<AppSettings>): Promise<void> {
     try {
       this.settings = { ...this.settings, ...settings };
