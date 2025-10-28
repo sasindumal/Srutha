@@ -100,7 +100,7 @@ export const AddChannelScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#0F0F0F',
   },
   contentContainer: {
     padding: 16,
@@ -108,23 +108,24 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#111827',
+    color: '#F1F1F1',
     marginBottom: 8,
   },
   helpText: {
     fontSize: 13,
-    color: '#6b7280',
+    color: '#AAAAAA',
     marginBottom: 24,
     lineHeight: 20,
   },
   input: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#212121',
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: '#3F3F3F',
     borderRadius: 8,
     padding: 16,
     fontSize: 16,
     marginBottom: 24,
+    color: '#F1F1F1',
   },
   addButton: {
     marginBottom: 16,
@@ -134,13 +135,13 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: '#3F3F3F',
     marginVertical: 16,
   },
   examplesTitle: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#4b5563',
+    color: '#AAAAAA',
     marginBottom: 8,
   },
   examplesContainer: {

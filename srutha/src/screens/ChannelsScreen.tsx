@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { View, FlatList, StyleSheet, Text, Alert, TouchableOpacity, Animated } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
+import { FAB, useTheme } from 'react-native-paper';
 import { useChannel } from '../context/ChannelContext';
 import { ChannelCard } from '../components/ChannelCard';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -8,6 +9,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 export const ChannelsScreen = ({ navigation }: any) => {
   const { channels, deleteChannel } = useChannel();
   const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
+  const theme = useTheme();
 
   const handleDeleteChannel = (channelId: string, channelName: string) => {
     Alert.alert(
@@ -99,6 +101,12 @@ export const ChannelsScreen = ({ navigation }: any) => {
         ListEmptyComponent={renderEmptyState}
         contentContainerStyle={channels.length === 0 ? styles.emptyList : undefined}
       />
+      <FAB
+        icon="plus"
+        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
+        onPress={() => navigation.navigate('AddChannel')}
+        color="#ffffff"
+      />
     </View>
   );
 };
@@ -106,7 +114,7 @@ export const ChannelsScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#0F0F0F',
   },
   emptyList: {
     flexGrow: 1,
@@ -119,13 +127,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    color: '#4b5563',
+    color: '#AAAAAA',
     marginTop: 16,
     fontWeight: '500',
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: '#717171',
     marginTop: 8,
   },
   rightAction: {
@@ -133,20 +141,26 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   deleteAction: {
-    backgroundColor: '#ef4444',
+    backgroundColor: '#FF0000',
     justifyContent: 'center',
     alignItems: 'center',
     width: 80,
     height: '100%',
-    marginVertical: 6,
-    marginRight: 12,
-    borderTopRightRadius: 4,
-    borderBottomRightRadius: 4,
+    marginVertical: 0,
+    marginRight: 0,
+    borderTopRightRadius: 0,
+    borderBottomRightRadius: 0,
   },
   deleteActionText: {
-    color: '#ffffff',
+    color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '600',
     marginTop: 4,
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 0,
   },
 });

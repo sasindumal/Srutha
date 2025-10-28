@@ -22,7 +22,12 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
   };
 
   return (
-    <Card style={styles.card} onPress={onPress} onLongPress={onLongPress}>
+    <TouchableOpacity 
+      style={styles.card} 
+      onPress={onPress} 
+      onLongPress={onLongPress}
+      activeOpacity={0.7}
+    >
       <View style={styles.container}>
         {/* Channel thumbnail */}
         <Image
@@ -43,7 +48,7 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
               <IconButton
                 icon="delete-outline"
                 size={20}
-                iconColor="#ef4444"
+                iconColor="#FF0000"
                 onPress={handleDelete}
                 style={styles.deleteButton}
               />
@@ -67,7 +72,7 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
           ) : null}
         </View>
       </View>
-    </Card>
+    </TouchableOpacity>
   );
 };
 
@@ -85,19 +90,19 @@ const formatSubscribers = (count?: number | null): string => {
 
 const styles = StyleSheet.create({
   card: {
-    marginHorizontal: 12,
-    marginVertical: 6,
-    elevation: 2,
+    backgroundColor: '#0F0F0F',
+    marginBottom: 16,
   },
   container: {
     flexDirection: 'row',
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
   },
   thumbnail: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: '#e5e7eb',
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: '#272727',
   },
   infoContainer: {
     flex: 1,
@@ -108,25 +113,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   channelName: {
     flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#F1F1F1',
   },
   deleteButton: {
     margin: 0,
     marginRight: -8,
   },
   subscriberCount: {
-    fontSize: 13,
-    color: '#6b7280',
+    fontSize: 12,
+    color: '#AAAAAA',
     marginBottom: 4,
   },
   description: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: '#717171',
+    lineHeight: 16,
   },
 });

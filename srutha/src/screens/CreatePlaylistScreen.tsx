@@ -72,13 +72,14 @@ export const CreatePlaylistScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#0F0F0F',
   },
   content: {
     padding: 16,
   },
   input: {
     marginBottom: 16,
+    backgroundColor: '#212121',
   },
   button: {
     marginTop: 8,

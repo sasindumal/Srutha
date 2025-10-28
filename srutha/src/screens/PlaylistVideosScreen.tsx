@@ -89,7 +89,7 @@ export const PlaylistVideosScreen = ({ route, navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#0F0F0F',
   },
   videoCardContainer: {
     position: 'relative',
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(33, 33, 33, 0.95)',
     margin: 0,
   },
   emptyList: {
@@ -112,13 +112,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    color: '#4b5563',
+    color: '#AAAAAA',
     marginTop: 16,
     fontWeight: '500',
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: '#717171',
     marginTop: 8,
     textAlign: 'center',
   },

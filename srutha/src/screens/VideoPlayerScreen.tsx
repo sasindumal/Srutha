@@ -232,7 +232,7 @@ export const VideoPlayerScreen = ({ route }: any) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView>
+      <ScrollView showsVerticalScrollIndicator={false}>
         {/* YouTube Video Player */}
         <View style={styles.videoContainer}>
           {videoId ? (
@@ -276,44 +276,46 @@ export const VideoPlayerScreen = ({ route }: any) => {
               )}
             </View>
           </View>
+        </View>
 
-          {/* Action buttons */}
-          <View style={styles.actionsContainer}>
-            <TouchableOpacity style={styles.actionButton} onPress={handleAddToPlaylist}>
-              <IconButton icon="playlist-plus" size={24} />
-              <Text style={styles.actionText}>Playlist</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
-              <IconButton icon="share-variant" size={24} />
-              <Text style={styles.actionText}>Share</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
+        {/* Action buttons */}
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity style={styles.actionButton} onPress={handleAddToPlaylist}>
+            <IconButton icon="playlist-plus" size={24} iconColor="#F1F1F1" />
+            <Text style={styles.actionText}>Playlist</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+            <IconButton icon="share-variant" size={24} iconColor="#F1F1F1" />
+            <Text style={styles.actionText}>Share</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
               style={styles.actionButton} 
               onPress={handleDownload}
               disabled={isDownloading}
             >
               {isDownloading ? (
-                <ActivityIndicator size={24} style={{ marginVertical: 8 }} />
+                <ActivityIndicator size={24} color="#F1F1F1" style={{ marginVertical: 8 }} />
               ) : (
-                <IconButton icon="download" size={24} />
+                <IconButton icon="download" size={24} iconColor="#F1F1F1" />
               )}
               <Text style={styles.actionText}>
                 {isDownloading ? 'Downloading...' : 'Download'}
               </Text>
             </TouchableOpacity>
+        </View>
+
+        {/* Download Progress Bar */}
+        {isDownloading && downloadProgress > 0 && (
+          <View style={styles.downloadProgressContainer}>
+            <Text style={styles.downloadProgressText}>
+              Downloading: {Math.round(downloadProgress * 100)}%
+            </Text>
+            <ProgressBar progress={downloadProgress} color={theme.colors.primary} />
           </View>
+        )}
 
-          {/* Download Progress Bar */}
-          {isDownloading && downloadProgress > 0 && (
-            <View style={styles.downloadProgressContainer}>
-              <Text style={styles.downloadProgressText}>
-                Downloading: {Math.round(downloadProgress * 100)}%
-              </Text>
-              <ProgressBar progress={downloadProgress} color={theme.colors.primary} />
-            </View>
-          )}
-
-          {/* Description */}
+        {/* Description */}
+        <View style={styles.descriptionWrapper}>
           {video.description && (
             <View style={styles.descriptionContainer}>
               <Text style={styles.descriptionTitle}>Description</Text>
@@ -385,7 +387,7 @@ export const VideoPlayerScreen = ({ route }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#0F0F0F',
   },
   videoContainer: {
     width: SCREEN_WIDTH,
@@ -396,10 +398,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1f2937',
+    backgroundColor: '#000000',
   },
   placeholderText: {
-    color: '#ffffff',
+    color: '#FFFFFF',
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 16,
@@ -407,29 +409,32 @@ const styles = StyleSheet.create({
   openYouTubeButton: {
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 18,
   },
   openYouTubeButtonText: {
-    color: '#ffffff',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },
   infoContainer: {
-    padding: 16,
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 12,
+    fontSize: 15,
+    fontWeight: '400',
+    color: '#F1F1F1',
+    marginBottom: 8,
+    lineHeight: 22,
   },
   metaContainer: {
-    marginBottom: 16,
+    marginBottom: 4,
   },
   channelName: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '500',
-    color: '#111827',
+    color: '#F1F1F1',
     marginBottom: 4,
   },
   metaRow: {
@@ -437,64 +442,69 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   metaText: {
-    fontSize: 13,
-    color: '#6b7280',
+    fontSize: 12,
+    color: '#AAAAAA',
   },
   actionsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#e5e7eb',
-    marginBottom: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginTop: 4,
+    backgroundColor: '#0F0F0F',
   },
   actionButton: {
     alignItems: 'center',
+    flex: 1,
   },
   actionText: {
-    fontSize: 12,
-    color: '#4b5563',
+    fontSize: 11,
+    color: '#F1F1F1',
     marginTop: -8,
   },
   downloadProgressContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 12,
-    marginBottom: 16,
-    backgroundColor: '#ffffff',
+    marginHorizontal: 12,
+    marginBottom: 12,
+    backgroundColor: '#212121',
     borderRadius: 8,
   },
   downloadProgressText: {
-    fontSize: 14,
-    color: '#111827',
+    fontSize: 13,
+    color: '#F1F1F1',
     marginBottom: 8,
-    fontWeight: '500',
+    fontWeight: '400',
+  },
+  descriptionWrapper: {
+    paddingHorizontal: 12,
+    paddingBottom: 16,
   },
   descriptionContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#212121',
     padding: 12,
     borderRadius: 8,
   },
   descriptionTitle: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
+    fontWeight: '500',
+    color: '#F1F1F1',
     marginBottom: 8,
   },
   descriptionText: {
     fontSize: 13,
-    color: '#4b5563',
-    lineHeight: 20,
+    color: '#AAAAAA',
+    lineHeight: 18,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: '#212121',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
     maxHeight: '80%',
     paddingBottom: 20,
   },
@@ -506,12 +516,12 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#3F3F3F',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111827',
+    color: '#F1F1F1',
   },
   playlistItem: {
     flexDirection: 'row',
@@ -524,16 +534,16 @@ const styles = StyleSheet.create({
   },
   playlistName: {
     fontSize: 16,
-    color: '#111827',
+    color: '#F1F1F1',
     marginBottom: 2,
   },
   playlistVideoCount: {
     fontSize: 13,
-    color: '#6b7280',
+    color: '#AAAAAA',
   },
   emptyPlaylistText: {
     textAlign: 'center',
-    color: '#9ca3af',
+    color: '#717171',
     padding: 32,
     fontSize: 14,
   },

@@ -7,18 +7,16 @@ import { StyleSheet } from 'react-native';
 import { ChannelProvider } from './src/context/ChannelContext';
 import { PlaylistProvider } from './src/context/PlaylistContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
-import { useAppTheme } from './src/theme/theme';
+import { darkTheme } from './src/theme/theme';
 
 export default function App() {
-  const theme = useAppTheme();
-
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>
-        <PaperProvider theme={theme}>
+        <PaperProvider theme={darkTheme}>
           <ChannelProvider>
             <PlaylistProvider>
-              <StatusBar style="auto" />
+              <StatusBar style="light" backgroundColor="#0F0F0F" />
               <AppNavigator />
             </PlaylistProvider>
           </ChannelProvider>

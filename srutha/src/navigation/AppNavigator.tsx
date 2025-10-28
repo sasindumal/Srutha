@@ -1,7 +1,9 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { IconButton } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ChannelsScreen } from '../screens/ChannelsScreen';
 import { AddChannelScreen } from '../screens/AddChannelScreen';
@@ -13,6 +15,83 @@ import { EditPlaylistScreen } from '../screens/EditPlaylistScreen';
 import { PlaylistVideosScreen } from '../screens/PlaylistVideosScreen';
 
 const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
+
+// Bottom Tab Navigator
+const MainTabs = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        tabBarStyle: {
+          backgroundColor: '#0F0F0F',
+          borderTopColor: '#272727',
+          borderTopWidth: 1,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarActiveTintColor: '#FFFFFF',
+        tabBarInactiveTintColor: '#AAAAAA',
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '500',
+        },
+        headerStyle: {
+          backgroundColor: '#0F0F0F',
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 1,
+          borderBottomColor: '#272727',
+        },
+        headerTintColor: '#F1F1F1',
+        headerTitleStyle: {
+          fontWeight: '500',
+          fontSize: 18,
+        },
+      }}
+    >
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="home" size={size} color={color} />
+          ),
+          headerTitle: 'Srutha',
+        }}
+      />
+      <Tab.Screen
+        name="Channels"
+        component={ChannelsScreen}
+        options={{
+          title: 'Channels',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="youtube-subscription" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Playlists"
+        component={PlaylistsScreen}
+        options={({ navigation }) => ({
+          title: 'Playlists',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="playlist-music" size={size} color={color} />
+          ),
+          headerRight: () => (
+            <IconButton
+              icon="plus"
+              size={24}
+              iconColor="#F1F1F1"
+              onPress={() => navigation.navigate('CreatePlaylist')}
+            />
+          ),
+        })}
+      />
+    </Tab.Navigator>
+  );
+};
 
 export const AppNavigator = () => {
   return (
@@ -20,42 +99,24 @@ export const AppNavigator = () => {
       <Stack.Navigator
         screenOptions={{
           headerStyle: {
-            backgroundColor: '#ffffff',
-            elevation: 1,
-            shadowOpacity: 0.1,
+            backgroundColor: '#0F0F0F',
+            elevation: 0,
+            shadowOpacity: 0,
+            borderBottomWidth: 1,
+            borderBottomColor: '#272727',
           },
-          headerTintColor: '#111827',
+          headerTintColor: '#F1F1F1',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontWeight: '500',
+            fontSize: 18,
           },
         }}
       >
         <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={({ navigation }) => ({
-            title: 'Srutha',
-            headerRight: () => (
-              <>
-                <IconButton
-                  icon="playlist-music"
-                  size={24}
-                  onPress={() => navigation.navigate('Playlists')}
-                />
-                <IconButton
-                  icon="youtube-subscription"
-                  size={24}
-                  onPress={() => navigation.navigate('Channels')}
-                />
-              </>
-            ),
-          })}
-        />
-        <Stack.Screen
-          name="Channels"
-          component={ChannelsScreen}
+          name="MainTabs"
+          component={MainTabs}
           options={{
-            title: 'Channels',
+            headerShown: false,
           }}
         />
         <Stack.Screen
@@ -70,7 +131,7 @@ export const AppNavigator = () => {
           component={VideoPlayerScreen}
           options={{
             title: 'Watch Video',
-            headerShown: false,
+            headerShown: true,
           }}
         />
         <Stack.Screen
@@ -78,20 +139,6 @@ export const AppNavigator = () => {
           component={ChannelVideosScreen}
           options={({ route }: any) => ({
             title: route.params?.channel?.name || 'Channel Videos',
-          })}
-        />
-        <Stack.Screen
-          name="Playlists"
-          component={PlaylistsScreen}
-          options={({ navigation }) => ({
-            title: 'Playlists',
-            headerRight: () => (
-              <IconButton
-                icon="plus"
-                size={24}
-                onPress={() => navigation.navigate('CreatePlaylist')}
-              />
-            ),
           })}
         />
         <Stack.Screen

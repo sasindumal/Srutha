@@ -9,7 +9,7 @@ import {
   Modal,
   ScrollView,
 } from 'react-native';
-import { FAB, useTheme, Searchbar, Chip, Button, RadioButton } from 'react-native-paper';
+import { useTheme, Searchbar, Chip, Button, RadioButton } from 'react-native-paper';
 import { useChannel } from '../context/ChannelContext';
 import { VideoCard } from '../components/VideoCard';
 import { Video } from '../models/Video';
@@ -219,13 +219,17 @@ export const HomeScreen = ({ navigation }: any) => {
   return (
     <View style={styles.container}>
       {/* Search Bar */}
-      <Searchbar
-        placeholder="Search videos..."
-        onChangeText={setSearchQuery}
-        value={searchQuery}
-        style={styles.searchBar}
-        icon="magnify"
-      />
+      <View style={styles.searchContainer}>
+        <Searchbar
+          placeholder="Search videos..."
+          onChangeText={setSearchQuery}
+          value={searchQuery}
+          style={styles.searchBar}
+          icon="magnify"
+          iconColor="#AAAAAA"
+          placeholderTextColor="#717171"
+        />
+      </View>
 
       {/* Filter Chips */}
       <ScrollView
@@ -434,6 +438,8 @@ export const HomeScreen = ({ navigation }: any) => {
                 mode="outlined"
                 onPress={clearFilters}
                 style={styles.clearButton}
+                textColor="#AAAAAA"
+                buttonColor="transparent"
               >
                 Clear All
               </Button>
@@ -441,6 +447,7 @@ export const HomeScreen = ({ navigation }: any) => {
                 mode="contained"
                 onPress={() => setShowFilterModal(false)}
                 style={styles.applyButton}
+                buttonColor="#3EA6FF"
               >
                 Apply
               </Button>
@@ -448,13 +455,6 @@ export const HomeScreen = ({ navigation }: any) => {
           </View>
         </View>
       </Modal>
-
-      <FAB
-        icon="plus"
-        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-        onPress={() => navigation.navigate('AddChannel')}
-        color="#ffffff"
-      />
     </View>
   );
 };
@@ -462,12 +462,17 @@ export const HomeScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#0F0F0F',
+  },
+  searchContainer: {
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: 4,
   },
   searchBar: {
-    margin: 12,
-    marginBottom: 8,
-    elevation: 2,
+    elevation: 0,
+    backgroundColor: '#212121',
+    borderRadius: 8,
   },
   filterChipsContainer: {
     maxHeight: 50,
@@ -480,6 +485,7 @@ const styles = StyleSheet.create({
   },
   filterChip: {
     marginRight: 8,
+    backgroundColor: '#272727',
   },
   emptyList: {
     flexGrow: 1,
@@ -492,13 +498,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    color: '#4b5563',
+    color: '#AAAAAA',
     marginTop: 16,
     fontWeight: '500',
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#717171',
     marginTop: 8,
     textAlign: 'center',
   },
@@ -508,17 +514,17 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#717171',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: '#212121',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
     maxHeight: '85%',
   },
   modalHeader: {
@@ -527,12 +533,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#3F3F3F',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#111827',
+    color: '#F1F1F1',
   },
   modalBody: {
     padding: 16,
@@ -540,7 +546,7 @@ const styles = StyleSheet.create({
   filterSectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
+    color: '#F1F1F1',
     marginTop: 16,
     marginBottom: 8,
   },
@@ -551,7 +557,7 @@ const styles = StyleSheet.create({
   },
   radioLabel: {
     fontSize: 16,
-    color: '#374151',
+    color: '#AAAAAA',
     marginLeft: 8,
   },
   channelFilterItem: {
@@ -561,7 +567,7 @@ const styles = StyleSheet.create({
   },
   channelFilterLabel: {
     fontSize: 16,
-    color: '#374151',
+    color: '#AAAAAA',
     marginLeft: 8,
     flex: 1,
   },
@@ -569,7 +575,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: '#3F3F3F',
     gap: 12,
   },
   clearButton: {
@@ -577,11 +583,5 @@ const styles = StyleSheet.create({
   },
   applyButton: {
     flex: 1,
-  },
-  fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
   },
 });

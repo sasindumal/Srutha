@@ -25,19 +25,20 @@ const darkTheme = {
   ...MD3DarkTheme,
   colors: {
     ...MD3DarkTheme.colors,
-    primary: '#dc2626', // red-600
-    primaryContainer: '#7f1d1d', // red-900
-    secondary: '#ef4444', // red-500
-    secondaryContainer: '#991b1b', // red-800
-    tertiary: '#f87171', // red-400
-    error: '#ef4444',
-    background: '#111827',
-    surface: '#1f2937',
-    surfaceVariant: '#374151',
-    onPrimary: '#ffffff',
-    onSecondary: '#ffffff',
-    onBackground: '#f9fafb',
-    onSurface: '#f9fafb',
+    primary: '#FF0000', // YouTube red
+    primaryContainer: '#CC0000', // Darker YouTube red
+    secondary: '#AAAAAA', // YouTube gray text
+    secondaryContainer: '#272727', // YouTube card background
+    tertiary: '#3EA6FF', // YouTube blue (links/active)
+    error: '#FF0000',
+    background: '#0F0F0F', // YouTube main background
+    surface: '#212121', // YouTube surface/card
+    surfaceVariant: '#3F3F3F', // YouTube hover/selected
+    onPrimary: '#FFFFFF',
+    onSecondary: '#FFFFFF',
+    onBackground: '#F1F1F1', // YouTube main text
+    onSurface: '#F1F1F1', // YouTube text on cards
+    outline: '#717171', // YouTube borders/dividers
   },
 };
 

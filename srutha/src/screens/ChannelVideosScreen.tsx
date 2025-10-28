@@ -47,7 +47,7 @@ export const ChannelVideosScreen = ({ route, navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#0F0F0F',
   },
   emptyList: {
     flexGrow: 1,
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    color: '#4b5563',
+    color: '#AAAAAA',
     marginTop: 16,
     fontWeight: '500',
   },

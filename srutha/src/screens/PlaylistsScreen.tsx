@@ -109,12 +109,15 @@ export const PlaylistsScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#0F0F0F',
   },
   card: {
-    marginHorizontal: 12,
-    marginVertical: 6,
-    elevation: 2,
+    marginHorizontal: 0,
+    marginVertical: 0,
+    marginBottom: 12,
+    elevation: 0,
+    backgroundColor: '#0F0F0F',
+    borderRadius: 0,
   },
   cardContent: {
     flexDirection: 'row',
@@ -125,7 +128,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 8,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#272727',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -134,19 +137,19 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   playlistName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#F1F1F1',
     marginBottom: 4,
   },
   videoCount: {
-    fontSize: 13,
-    color: '#6b7280',
+    fontSize: 12,
+    color: '#AAAAAA',
     marginBottom: 4,
   },
   description: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: '#717171',
   },
   actionsContainer: {
     flexDirection: 'row',
@@ -163,13 +166,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    color: '#4b5563',
+    color: '#AAAAAA',
     marginTop: 16,
     fontWeight: '500',
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: '#717171',
     marginTop: 8,
     textAlign: 'center',
   },

@@ -23,49 +23,53 @@ export const VideoCard: React.FC<VideoCardProps> = ({
   };
 
   return (
-    <Card style={[styles.card, video.watched && styles.watchedCard]} onPress={onPress}>
-      <View style={styles.container}>
-        {/* Thumbnail */}
-        <View style={styles.thumbnailContainer}>
-          <Image
-            source={{ uri: video.thumbnailUrl || 'https://via.placeholder.com/320x180' }}
-            style={[styles.thumbnail, video.watched && styles.watchedThumbnail]}
-            resizeMode="cover"
-          />
-          {video.durationSeconds && (
-            <View style={styles.durationBadge}>
-              <Text style={styles.durationText}>
-                {formatDuration(video.durationSeconds)}
-              </Text>
-            </View>
-          )}
-          {video.watched && (
-            <View style={styles.watchedOverlay}>
-              <Icon name="check-circle" size={32} color="#10b981" />
-            </View>
+    <TouchableOpacity 
+      style={[styles.card, video.watched && styles.watchedCard]} 
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      {/* Thumbnail */}
+      <View style={styles.thumbnailContainer}>
+        <Image
+          source={{ uri: video.thumbnailUrl || 'https://via.placeholder.com/320x180' }}
+          style={[styles.thumbnail, video.watched && styles.watchedThumbnail]}
+          resizeMode="cover"
+        />
+        {video.durationSeconds && (
+          <View style={styles.durationBadge}>
+            <Text style={styles.durationText}>
+              {formatDuration(video.durationSeconds)}
+            </Text>
+          </View>
+        )}
+        {video.watched && (
+          <View style={styles.watchedOverlay}>
+            <Icon name="check-circle" size={32} color="#10b981" />
+          </View>
+        )}
+      </View>
+
+      {/* Video info */}
+      <View style={styles.infoContainer}>
+        <View style={styles.titleRow}>
+          <Text style={[styles.title, video.watched && styles.watchedTitle]} numberOfLines={2}>
+            {video.title}
+          </Text>
+          {showWatchedButton && onToggleWatched && (
+            <IconButton
+              icon={video.watched ? 'eye-check' : 'eye-outline'}
+              size={20}
+              iconColor={video.watched ? '#10b981' : '#AAAAAA'}
+              onPress={handleToggleWatched}
+              style={styles.watchedButton}
+            />
           )}
         </View>
-
-        {/* Video info */}
-        <View style={styles.infoContainer}>
-          <View style={styles.titleRow}>
-            <Text style={[styles.title, video.watched && styles.watchedTitle]} numberOfLines={2}>
-              {video.title}
-            </Text>
-            {showWatchedButton && onToggleWatched && (
-              <IconButton
-                icon={video.watched ? 'eye-check' : 'eye-outline'}
-                size={20}
-                iconColor={video.watched ? '#10b981' : '#6b7280'}
-                onPress={handleToggleWatched}
-                style={styles.watchedButton}
-              />
-            )}
-          </View>
+        <View style={styles.metaContainer}>
           <Text style={styles.channelName} numberOfLines={1}>
             {video.channelName}
           </Text>
-          <View style={styles.metaContainer}>
+          <View style={styles.metaRow}>
             {video.viewCount !== undefined && (
               <Text style={styles.metaText}>{formatViews(video.viewCount)}</Text>
             )}
@@ -78,25 +82,22 @@ export const VideoCard: React.FC<VideoCardProps> = ({
           </View>
         </View>
       </View>
-    </Card>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    marginHorizontal: 12,
-    marginVertical: 6,
-    elevation: 2,
+    backgroundColor: '#0F0F0F',
+    marginBottom: 16,
   },
   watchedCard: {
     opacity: 0.7,
   },
-  container: {
-    flex: 1,
-  },
   thumbnailContainer: {
+    width: '100%',
     aspectRatio: 16 / 9,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: '#272727',
     position: 'relative',
   },
   thumbnail: {
@@ -114,51 +115,57 @@ const styles = StyleSheet.create({
   },
   durationBadge: {
     position: 'absolute',
-    bottom: 8,
-    right: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.87)',
-    paddingHorizontal: 6,
+    bottom: 4,
+    right: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    paddingHorizontal: 4,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: 2,
   },
   durationText: {
-    color: '#ffffff',
+    color: '#FFFFFF',
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   infoContainer: {
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: 8,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   title: {
     flex: 1,
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#111827',
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#F1F1F1',
+    lineHeight: 20,
   },
   watchedTitle: {
-    color: '#6b7280',
+    color: '#AAAAAA',
   },
   watchedButton: {
     margin: 0,
     marginTop: -8,
     marginRight: -8,
   },
-  channelName: {
-    fontSize: 13,
-    color: '#6b7280',
-    marginBottom: 4,
-  },
   metaContainer: {
+    flexDirection: 'column',
+  },
+  channelName: {
+    fontSize: 12,
+    color: '#AAAAAA',
+    marginBottom: 2,
+  },
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   metaText: {
     fontSize: 12,
-    color: '#6b7280',
+    color: '#AAAAAA',
   },
 });
