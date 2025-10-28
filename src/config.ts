@@ -1,5 +1,8 @@
 // Central place for runtime configuration
 // NOTE: Do not commit real secrets in production. For local development only.
 
-// If you prefer using Expo app.json, you can move this to expo constants later.
-export const YOUTUBE_API_KEY = 'AIzaSyBhGlhxFpw7wzROsDEHk3PKrMo6eAuJLEQ';
+// Using react-native-dotenv via Babel to inject values from .env at build time
+import { YOUTUBE_API_KEY as ENV_YOUTUBE_API_KEY } from '@env';
+
+// Provide a safe fallback to empty string if undefined at runtime
+export const YOUTUBE_API_KEY: string = ENV_YOUTUBE_API_KEY ?? '';
