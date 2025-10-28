@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Srutha",
+    "slug": "srutha",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logo.jpg",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/logo.jpg",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.srutha.app"
+    },
+    "android": {
+      "package": "com.srutha.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
+    },
+    "web": {},
+    "plugins": [
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow Srutha to access your microphone."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "da6226a9-d39a-48e2-b143-8c334ad91dda"
+      }
+    }
+  }
+}
