@@ -9,6 +9,7 @@ import { ChannelsScreen } from '../screens/ChannelsScreen';
 import { AddChannelScreen } from '../screens/AddChannelScreen';
 import { VideoPlayerScreen } from '../screens/VideoPlayerScreen';
 import { ChannelVideosScreen } from '../screens/ChannelVideosScreen';
+import { ChannelPlaylistScreen } from '../screens/ChannelPlaylistScreen';
 import { PlaylistsScreen } from '../screens/PlaylistsScreen';
 import { WatchHistoryScreen } from '../screens/WatchHistoryScreen';
 import { CreatePlaylistScreen } from '../screens/CreatePlaylistScreen';
@@ -151,6 +152,13 @@ export const AppNavigator = () => {
           component={ChannelVideosScreen}
           options={({ route }: any) => ({
             title: route.params?.channel?.name || 'Channel Videos',
+          })}
+        />
+        <Stack.Screen
+          name="ChannelPlaylist"
+          component={ChannelPlaylistScreen}
+          options={({ route }: any) => ({
+            title: route.params?.playlist?.title || 'Playlist',
           })}
         />
         <Stack.Screen

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { ChannelInput } from '../models/Channel';
 import { VideoInput } from '../models/Video';
+import { ChannelPlaylist } from '@/models/ChannelPlaylist';
 import { YOUTUBE_API_KEY } from '../config';
 
 // Note: This is a simplified implementation. For production, you would need:
@@ -13,6 +14,8 @@ class YouTubeService {
   private readonly GOOGLE_API_BASE = 'https://www.googleapis.com/youtube/v3';
   // Track pagination per channel in-memory
   private nextPageTokenByChannel: Map<string, string | null> = new Map();
+  private nextPlaylistPageTokenByChannel: Map<string, string | null> = new Map();
+  private nextPageTokenByPlaylist: Map<string, string | null> = new Map();
   
   /**
    * Extract channel ID from various YouTube URL formats
@@ -206,6 +209,22 @@ class YouTubeService {
     }
   }
 
+  resetChannelPlaylistsPagination(channelId?: string) {
+    if (channelId) {
+      this.nextPlaylistPageTokenByChannel.delete(channelId);
+    } else {
+      this.nextPlaylistPageTokenByChannel.clear();
+    }
+  }
+
+  resetPlaylistItemsPagination(playlistId?: string) {
+    if (playlistId) {
+      this.nextPageTokenByPlaylist.delete(playlistId);
+    } else {
+      this.nextPageTokenByPlaylist.clear();
+    }
+  }
+
   /**
    * Search for channels
    */
@@ -241,6 +260,133 @@ class YouTubeService {
       const message = error?.response?.data?.error?.message || error?.message || String(error);
       throw new Error(`Failed to search channels: ${message}`);
     }
+  }
+
+  /**
+   * Get playlists for a channel
+   */
+  async getChannelPlaylists(channelId: string, limit: number = 25, pageToken?: string): Promise<ChannelPlaylist[]> {
+    try {
+      const max = Math.min(Math.max(limit, 1), 50);
+      const resp = await axios.get(`${this.GOOGLE_API_BASE}/playlists`, {
+        params: {
+          part: 'snippet,contentDetails',
+          channelId,
+          maxResults: max,
+          pageToken,
+          key: YOUTUBE_API_KEY,
+        },
+      });
+
+      const items: any[] = resp.data.items || [];
+      const nextToken: string | undefined = resp.data.nextPageToken;
+      this.nextPlaylistPageTokenByChannel.set(channelId, nextToken ?? null);
+
+      if (items.length === 0) return [];
+
+      return items.map((it) => {
+        const sn = it.snippet;
+        const cd = it.contentDetails;
+        return {
+          id: it.id,
+          title: sn.title,
+          description: sn.description,
+          thumbnailUrl: sn.thumbnails?.high?.url || sn.thumbnails?.default?.url,
+          itemCount: typeof cd?.itemCount === 'number' ? cd.itemCount : undefined,
+          channelId: sn.channelId,
+          channelName: sn.channelTitle,
+        } as ChannelPlaylist;
+      });
+    } catch (error: any) {
+      const message = error?.response?.data?.error?.message || error?.message || String(error);
+      throw new Error(`Failed to fetch channel playlists: ${message}`);
+    }
+  }
+
+  async getChannelPlaylistsNext(channelId: string, pageSize: number = 25): Promise<ChannelPlaylist[]> {
+    const token = this.nextPlaylistPageTokenByChannel.get(channelId);
+    if (token === null) return [];
+    return this.getChannelPlaylists(channelId, pageSize, token ?? undefined);
+  }
+
+  /**
+   * Get playlist items (videos) for a playlist
+   */
+  async getPlaylistItems(playlistId: string, limit: number = 50, pageToken?: string): Promise<VideoInput[]> {
+    try {
+      const max = Math.min(Math.max(limit, 1), 50);
+      const resp = await axios.get(`${this.GOOGLE_API_BASE}/playlistItems`, {
+        params: {
+          part: 'snippet,contentDetails',
+          playlistId,
+          maxResults: max,
+          pageToken,
+          key: YOUTUBE_API_KEY,
+        },
+      });
+
+      const items: any[] = resp.data.items || [];
+      const nextToken: string | undefined = resp.data.nextPageToken;
+      this.nextPageTokenByPlaylist.set(playlistId, nextToken ?? null);
+
+      if (items.length === 0) return [];
+
+      // Map to base VideoInput
+      const baseVideos: VideoInput[] = items
+        .map((it) => {
+          const sn = it.snippet;
+          const vid = sn?.resourceId?.videoId;
+          if (!vid) return null;
+          return {
+            id: vid,
+            title: sn.title,
+            channelId: sn.channelId,
+            channelName: sn.channelTitle,
+            description: sn.description,
+            thumbnailUrl: sn.thumbnails?.high?.url || sn.thumbnails?.default?.url,
+            url: `https://www.youtube.com/watch?v=${vid}`,
+            uploadDate: sn.publishedAt,
+          } as VideoInput;
+        })
+        .filter(Boolean) as VideoInput[];
+
+      // Enrich with details
+      const ids = baseVideos.map((v) => v.id).filter(Boolean);
+      if (ids.length > 0) {
+        const videosResp = await axios.get(`${this.GOOGLE_API_BASE}/videos`, {
+          params: {
+            part: 'contentDetails,statistics',
+            id: ids.join(','),
+            key: YOUTUBE_API_KEY,
+          },
+        });
+
+        const detailsMap = new Map<string, any>();
+        for (const it of videosResp.data.items || []) {
+          detailsMap.set(it.id, it);
+        }
+
+        for (const v of baseVideos) {
+          const d = detailsMap.get(v.id);
+          if (d) {
+            v.durationSeconds = this.parseISODuration(d.contentDetails?.duration);
+            const views = d.statistics?.viewCount;
+            v.viewCount = typeof views === 'string' ? Number(views) : views;
+          }
+        }
+      }
+
+      return baseVideos;
+    } catch (error: any) {
+      const message = error?.response?.data?.error?.message || error?.message || String(error);
+      throw new Error(`Failed to fetch playlist items: ${message}`);
+    }
+  }
+
+  async getPlaylistItemsNext(playlistId: string, pageSize: number = 50): Promise<VideoInput[]> {
+    const token = this.nextPageTokenByPlaylist.get(playlistId);
+    if (token === null) return [];
+    return this.getPlaylistItems(playlistId, pageSize, token ?? undefined);
   }
 
   /**
